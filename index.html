@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+
+<head id="head">
+    <meta charset="UTF-8">
+    <title>Copytype</title>
+    <link id="current-theme" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link href="fontawesome/css/all.css" rel="stylesheet" />
+    <script src="js/jquery.js"></script>
+    <script type="module" src="js/typing.js"></script>
+    <script type="module" src="js/avoid-inline.js"></script>
+    <script type="module" src="js/stats.js"></script>
+    <script type="module" src="js/themes.js"></script>
+    <script type="module" src="js/settings.js"></script>
+</head>
+
+<body>
+    <div class="hidden" id="loading">
+        <i class="fas fa-fw fa-spin fa-circle-notch"></i>
+    </div>
+
+    <div class="hidden" id="dim-content"></div>
+
+    <!-- Top section -->
+    <table id="top">
+        <td>
+            <div class="logo">
+                <div class="text">
+                    <h1 id="app-header">copytype</h1>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div id="menu">
+                <div class="text-button">
+                    <div class="icon">
+                        <i id="keyboard-header" class="fas fa-fw fa-keyboard"></i>
+                    </div>
+                </div>
+                <div class="text-button">
+                    <div class="icon">
+                        <i id="library-header" class="fas fa-fw fa-book"></i>
+                    </div>
+                </div>
+                <div class="text-button">
+                    <div class="icon">
+                        <i id="info-header" class="fas fa-fw fa-info"></i>
+                    </div>
+                </div>
+                <div class="text-button">
+                    <div class="icon">
+                        <i id="settings-header" class="fas fa-fw fa-cog"></i>
+                    </div>
+                </div>
+            </div>
+        </td>
+
+    </table>
+
+    <!-- Middle section -->
+    <div id="middle">
+        <!-- Info -->
+        <div id="info" class="hidden">
+            <div class="section">
+                <div class="title">about</div>
+                <p>Copytype is essentially a direct clone of <a href="https://monkeytype.com/">Monkeytype</a>. Its
+                    purpose is to let you import and type any ebook, using Monkeytype's typing interface.</p>
+            </div>
+            <div class="section">
+                <div class="subtitle">credit</div>
+                <p>This project would not be possible without Miodec, the creator of Monkeytype. Very huge thank you to
+                    you for everything that you do for the typing community, and thank you for letting me copy your
+                    website.</p>
+            </div>
+            <div class="section">
+                <div class="subtitle">stats</div>
+                <p>
+                    chars typed - total characters typed
+                    <br>
+                    sessions - times opened the book
+                    <br>
+                    wpm - total amount of characters in the correctly typed words (including spaces), divided by 5 and
+                    normalised to 60 seconds.
+                    <br>
+                    raw wpm - calculated just like wpm, but also includes incorrect words.
+                    <br>
+                    acc - percentage of correctly pressed keys.
+                </p>
+            </div>
+            <div class="section">
+                <div class="subtitle">bug report or feature request</div>
+                <p>If you encounter a bug, or have a feature request, you can join my <a
+                        href="https://discord.gg/zQAWJjn2QJ">discord server</a>, message me on discord, or create an
+                    issue on Github.</p>
+            </div>
+        </div>
+
+        <!-- Test content -->
+        <div id="main-page" class="hidden">
+            <p>
+                We are using Node.js <span id="node"></span>,
+                Chromium <span id="chrome"></span>,
+                and Electron <span id="electron"></span>.
+            </p>
+        </div>
+
+        <!-- Library -->
+        <div id="library" class="hidden">
+            <!-- Moved to preload.js -->
+            <!-- <div id="book">
+                <div class="cover-img-wrapper">
+                    <img id="cover-img">
+                </div>
+                <div class="title-wrapper">
+                    <label id="book-title">Test Title</label>
+                </div>
+                <div class="book-buttons">
+                    <i class="fas fa-keyboard"></i>
+                    <i class="fas fa-info"></i>
+                </div>
+            </div> -->
+            <div id="new-book" class="new-book-container book-choice">
+                <div class="cover-img-wrapper">
+                    <div class="plus-icon">
+                        <i class="fas fa-solid fa-plus"></i>
+                    </div>
+                </div>
+                <div class="title-wrapper">
+                    <label>Upload Book</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="no-book-warning" class="hidden">
+            <h1>You haven't started a book yet!</h1>
+            <div id="go-library">Go to library</div>
+        </div>
+
+        <div id="delete-warning" class="hidden dialog">
+            <h1>Are you sure you want to delete <span id="book-to-delete"></span>?</h1>
+            <table class="delete-buttons">
+                <td>
+                    <div id="confirm-delete" class="dialog-button delete-button"><span>Delete</span></div>
+                </td>
+                <td>
+                    <div id="cancel-delete" class="dialog-button delete-button"><span>Cancel</span></div>
+                </td>
+            </table>
+        </div>
+
+        <div id="book-finished" class="hidden dialog">
+            <h1>Congratulations!</h1>
+            <p>You finished your book.</p>
+            <table id="end-book-buttons">
+                <td>
+                    <div id="go-library" class="dialog-button end-book-button">Library</div>
+                </td>
+                <td>
+                    <div id="book-info" class="dialog-button end-book-button">Book Stats</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="book-exists" class="hidden dialog">
+            <h1>You already have a book with this title.</h1>
+            <p id="book-name"></p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="drm-error" class="hidden dialog">
+            <h1>Looks like that book contains DRM.</h1>
+            <a href="https://github.com/apprenticeharper/DeDRM_tools/wiki/Exactly-how-to-remove-DRM">How do I remove
+                DRM?</a>
+            <p id="book-name"></p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <!-- TODO: restart book dialog -->
+
+        <!-- TODO: Cover dialog -->
+
+        <!-- Typing -->
+        <div id="typing" class="hidden">
+            <label id="chapter-label" class="hide-chapter-label"></label>
+            <br>
+            <div id="page-selectors" class="hidden">
+                <div tabindex="0" id="page-prev">
+                    <span>
+                        <</span> </div> <div tabindex="0" id="page-next">
+                            <span>></span>
+                </div>
+            </div>
+
+            <table class="typing-stats" class="hidden">
+                <td id="wpm-counter" class="hidden"></td>
+                <td id="acc-counter" class="hidden"></td>
+            </table>
+            <div id="words"></div>
+        </div>
+
+        <!-- Stats -->
+        <div id="stats" class="hidden">
+            <div class="stat">
+                <div class="title">time typing</div>
+                <div id="time-typing" class="val"></div>
+            </div>
+
+            <table class="triple-group">
+                <td>
+                    <div class="stat">
+                        <div class="title">chars typed</div>
+                        <div id="chars-correct" class="val"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="stat">
+                        <div class="title">sessions</div>
+                        <div id="sessions" class="val"></div>
+                    </div>
+                </td>
+            </table>
+
+            <table class="triple-group">
+                <td>
+                    <div class="stat">
+                        <div class="title">raw wpm</div>
+                        <div id="raw-wpm" class="val"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="stat">
+                        <div class="title">avg wpm</div>
+                        <div id="wpm" class="val"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="stat">
+                        <div class="title">avg acc</div>
+                        <div id="accuracy" class="val"></div>
+                    </div>
+                </td>
+            </table>
+
+            <div id="date-started" class="val"></div>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings" class="pageSettings hidden">
+            <div class="links">
+                <a class="text-button" href="#group-behavior">behavior</a>
+                <a class="text-button" href="#group-input">input</a>
+                <a class="text-button" href="#group-caret">caret</a>
+                <a class="text-button" href="#group-appearance">appearance</a>
+                <a class="text-button" href="#group-theme">theme</a>
+                <a class="text-button" href="#group-hide-elements">hide elements</a>
+                <a class="text-button" href="#group-danger-zone">danger zone</a>
+            </div>
+
+            <!-- <div id="group_behavior" class="sectionGroupTitle" group="behavior">behavior <i
+                    class="fas fa-chevron-down"></i></div>
+            <div class="settingsGroup behavior"> -->
+            <div class="section blindMode">
+                <h1>blind mode</h1>
+                <div class="text">No errors or incorrect words are highlighted. Helps you to focus on raw speed.</div>
+                <div class="buttons">
+                    <div class="button" blindMode="false" tabindex="0">off</div>
+                    <div class="button" blindMode="true" tabindex="0">⠀</div>
+                </div>
+            </div>
+
+            <div class="section strictSpace">
+                <h1>strict space</h1>
+                <!-- This isn't how monkeytype's version works, but I can't make that version work with my typing code,
+                    and I almost like this better. -->
+                <div class="text">Pressing space at the beginning of a word will insert a space character when this mode is enabled.</div>
+                <div class="buttons">
+                    <div class="button" strictSpace="false" tabindex="0">off</div>
+                    <div class="button" strictSpace="true" tabindex="0">on</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div id="group-theme" class="section-group-title">
+                theme
+                <i class="fas fa-chevron-down close-section"></i>
+            </div>
+            <div class="section themes"> -->
+        <!-- <h1>theme</h1> -->
+        <!-- <div class="tabs">
+                    <div class="button active" tab="preset">preset</div>
+                    <div class="button" tab="custom">custom</div>
+                </div> -->
+        <!-- <div class="themes-tab">
+                    <div class="fav-themes buttons"></div>
+                    <div class="all-themes buttons"></div>
+                </div>
+            </div> -->
+        <!-- 
+                blind mode
+                strict space
+                stop on error (off, word, letter)
+                confidence mode
+                indicate typos (off, below, replace)
+                hide extra letters (off, default on)
+                lazy mode
+                smooth caret
+                caret style (maybe)
+                highlight mode
+                always show cpm
+                font size (maybe i guess)
+                font family (should be easy?)
+                flip test colors
+                colorful mode
+                custom background (harder)
+                custom theme
+                favorite themes
+                theme list
+
+
+                show/hide-----
+                live wpm
+                live accuracy
+                caps lock warning
+                division label (chapter, page)
+
+                ebook options----
+                Remove from text list (no quotes, new lines, etc.)
+                Text scroll options (page by page, line by line, tape mode)
+                remove punctuation
+
+                export/import settings
+                reset settings
+            
+            -->
+    </div>
+
+
+</body>
+
+</html>
