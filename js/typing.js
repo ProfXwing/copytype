@@ -648,6 +648,11 @@ function typeKey(e) {
                         lastShownLetter.addClass("correct");
                     } else if (lastTypedLetter != lastCorrectLetter && !lastShownLetter.hasClass("incorrect")) {
                         lastShownLetter.addClass("incorrect");
+                        if (settings.indicateTypos == "below") {
+                            lastShownLetter.append(`<hint>${lastTypedLetter}</div>`);
+                        } else if (settings.indicateTypos == "replace") {
+                            lastShownLetter.text(lastTypedLetter);
+                        }
                     }
                 }
 
@@ -714,6 +719,7 @@ function checkKey(e) {
         let currentTypedWords = getTypedAsWords();
         let currentTypedWordsLength = currentTypedWords.length - 1;
         let currentTypedWord = currentTypedWords[currentTypedWordsLength].split("");
+        let correctWord = text[currentTypedWordsLength][currentTypedWord.length - 1];
         let lastShownWord = $("#words").find("div").eq(currentTypedWordsLength);
         let lastShownLetter = lastShownWord.children().eq(currentTypedWord.length - 1);
 
@@ -728,6 +734,11 @@ function checkKey(e) {
 
         lastShownLetter.removeClass("correct");
         lastShownLetter.removeClass("incorrect");
+        lastShownLetter.find("hint").remove();
+
+        if (lastShownLetter.text() != correctWord) {
+            lastShownLetter.text(correctWord);
+        }
 
         // ---------------------------------------------------------------------------------------
 
@@ -756,7 +767,7 @@ function checkKey(e) {
         currentTypedWords = getTypedAsWords();
         let lastTypedWord = currentTypedWords[currentTypedWords.length - 1];
 
-        let correctWord = text[currentTypedWords.length - 1];
+        correctWord = text[currentTypedWords.length - 1];
         let currentShownWord = getShownWordText(currentTypedWords.length - 1);
 
         if (lastTypedWord.length >= correctWord.length && lastTypedWord.length < currentShownWord.length) {

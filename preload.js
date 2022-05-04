@@ -78,6 +78,10 @@ if (!fs.existsSync("settings.json")) {
             settings[setting] = defaultSettings[setting];
         }
     }
+
+    if (!fs.existsSync(settings.currentBook)) {
+        delete settings.currentBook;
+    }
     library.saveSettings(settings);
 }
 

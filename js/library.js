@@ -405,6 +405,12 @@ async function deleteBook(event, bookName) {
         await fs.rmdirSync(path, { recursive: true });
         event.sender.send("remove-from-library", bookName);
         event.sender.send("stop-loading");
+        let settings = getSettings();
+
+        if (settings.currentBook == bookName) {
+            delete settings.currentBook;
+            saveSettings(settings);
+        }
     }
 }
 

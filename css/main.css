@@ -107,8 +107,9 @@ body {
     color: var(--text-color);
 }
 
-.incorrect {
+.word letter.incorrect {
     color: var(--error-color);
+    position:relative;
 }
 
 #typing letter {
@@ -766,4 +767,20 @@ body {
 
  .pageSettings .buttons {
     grid-template-columns: initial;
+ }
+
+ .word letter.incorrect hint {
+    bottom: -0.75em;
+    color: var(--text-color);
+    display: grid;
+    font-size: .75em;
+    justify-content: center;
+    left: 0;
+    line-height: normal;
+    opacity: .5;
+    padding: 1px;
+    position: absolute;
+    text-align: center;
+    text-shadow: none;
+    width: 100%;
  }
