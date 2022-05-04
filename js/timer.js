@@ -5,7 +5,7 @@ import {
 } from "./typing.js";
 
 var startTime;
-var timerStarted = false;
+export var timerStarted = false;
 
 export function updateStats() {
     if (currentBookStats) {
@@ -38,9 +38,9 @@ export function updateStats() {
     }
 }
 
-export function stopTimer() {
+export function stopTimer(timeRemoved=0) {
     if (timerStarted) {
-        currentBookStats.wpm.timeTyping += Date.now() - startTime - 5000;
+        currentBookStats.wpm.timeTyping += Date.now() - startTime - timeRemoved;
         timerStarted = false;
     }
 }

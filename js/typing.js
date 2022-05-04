@@ -5,7 +5,8 @@ import {
 import {
     startTimer,
     stopTimer,
-    updateStats
+    updateStats,
+    timerStarted
 } from "./timer.js";
 
 class WrongSpace {}
@@ -32,10 +33,8 @@ export var settings = window.electron.getSettings();
 var caretPosX;
 var caretPosY;
 
-var timerStarted = false;
 
 var stopTimerEvent = setTimeout(() => {
-    timerStarted = false;
     stopTimer();
 }, 5000);
 
@@ -377,6 +376,7 @@ function prevWordSet() {
 
 
 export function nextWordSet(keepCurrent = false) {
+    stopTimer();
     if (!keepCurrent) {
         currentPage++;
         currentBookStats.wpm.correctChars += getCorrectChars();
@@ -471,9 +471,6 @@ export function nextWordSet(keepCurrent = false) {
         }
     }
 
-
-
-
     $("#words").append("<div id='caret'></div>");
 
     // Once the list of 100 words has loaded, remove the words that aren't on the screen 
@@ -564,19 +561,19 @@ function typeKey(e) {
             let typedAsWords = getTypedAsWords();
             let correctWord = text[typedAsWords.length - 1]
             let typedWord = typedAsWords[typedAsWords.length - 1];
-            
+
             if (e.key == "Enter") {
                 typed.push("\n");
                 typedAsWords = getTypedAsWords();
                 typedWord = typedAsWords[typedAsWords.length - 1];
 
             } else {
-                if ((settings.strictSpace || settings.stopOnError == "word") && e.key == " " && 
-                     typedWord.length == 0) {
+                if ((settings.strictSpace || settings.stopOnError == "word") && e.key == " " &&
+                    typedWord.length == 0) {
                     typed.push(new WrongSpace());
-                    
-                } else if (settings.stopOnError == "word" && e.key == " " && 
-                           correctWord != typedWord) {
+
+                } else if (settings.stopOnError == "word" && e.key == " " &&
+                    correctWord != typedWord) {
                     typed.push(new WrongSpace());
                 } else {
                     typed.push(e.key);
@@ -593,7 +590,7 @@ function typeKey(e) {
                     typed.push(" ");
                 }
             }
-            
+
 
             let currentTypedWords = getTypedAsWords();
             if (currentTypedWords.length > text.length) {
@@ -610,14 +607,12 @@ function typeKey(e) {
 
             if (!timerStarted) {
                 startTimer();
-                timerStarted = true;
             }
 
             // probably shouldn't do this, but i'm gonna do it anyway 😈
             clearTimeout(stopTimerEvent);
             stopTimerEvent = setTimeout(() => {
-                timerStarted = false;
-                stopTimer();
+                stopTimer(5000);
             }, 5000);
 
             // ---------------------- Letter styling (correct or wrong) ---------------------------
@@ -767,13 +762,37 @@ function checkKey(e) {
         if (lastTypedWord.length >= correctWord.length && lastTypedWord.length < currentShownWord.length) {
             let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(currentShownWord.length - 1);
             currentEndLetter.remove();
-        } 
+        }
         // -------------------------------------------------------------
     }
     if (text.length > 0) {
         if (!$("#words").hasClass("hidden") && typed.length != 0) {
+            let typedAsWords = getTypedAsWords();
+            let currentWordLength = typedAsWords[typedAsWords.length - 1].length;
+            let lastWord = $("#words").find(".word").eq(typedAsWords.length - 2);
 
+            let hasError = false;
+            for (let letter of lastWord.children()) {
+                console.log(letter);
+                if ($(letter).hasClass("incorrect")) {
+                    hasError = true;
+                }
+            }
+            
+            let toDelete = false;
             if (e.key == "Backspace") {
+                if (settings.confidenceMode == "max") {
+                    toDelete = false;
+                } else if (settings.confidenceMode == "on") {
+                    if (currentWordLength > 0 || hasError) {
+                        toDelete = true;
+                    }
+                } else if (settings.confidenceMode == "off") {
+                    toDelete = true;
+                }
+            }
+            
+            if (toDelete) {
                 // Account for mac users because mac is quirky
                 if ((window.electron.operatingSystem != 'darwin' && e.ctrlKey) || (window.electron.operatingSystem == 'darwin' && e.altKey)) {
                     let deleting = true;
@@ -798,6 +817,8 @@ function checkKey(e) {
         }
     }
 }
+
+
 
 document.addEventListener('keypress', typeKey);
 document.addEventListener('keydown', checkKey);
