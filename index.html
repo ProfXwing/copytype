@@ -285,12 +285,20 @@
 
             <div class="section strictSpace">
                 <h1>strict space</h1>
-                <!-- This isn't how monkeytype's version works, but I can't make that version work with my typing code,
-                    and I almost like this better. -->
                 <div class="text">Pressing space at the beginning of a word will insert a space character when this mode is enabled.</div>
                 <div class="buttons">
                     <div class="button" strictSpace="false" tabindex="0">off</div>
                     <div class="button" strictSpace="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section stopOnError">
+                <h1>stop on error</h1>
+                <div class="text">Letter mode will stop input when pressing any incorrect letters. Word mode will not allow you to continue to the next word until you correct all mistakes.</div>
+                <div class="buttons">
+                    <div class="button" stopOnError="off" tabindex="0">off</div>
+                    <div class="button" stopOnError="word" tabindex="0">word</div>
+                    <div class="button" stopOnError="letter" tabindex="0">letter</div>
                 </div>
             </div>
         </div>
@@ -311,9 +319,9 @@
                 </div>
             </div> -->
         <!-- 
-                blind mode
-                strict space
-                stop on error (off, word, letter)
+                //blind mode
+                //strict space
+                //stop on error (off, word, letter)
                 confidence mode
                 indicate typos (off, below, replace)
                 hide extra letters (off, default on)
@@ -342,6 +350,7 @@
                 Remove from text list (no quotes, new lines, etc.)
                 Text scroll options (page by page, line by line, tape mode)
                 remove punctuation
+                Save words typed per page
 
                 export/import settings
                 reset settings

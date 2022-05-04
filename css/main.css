@@ -763,3 +763,7 @@ body {
     grid-template-areas: "title title" "text buttons";
     grid-template-columns: 2fr 1fr;
  }
+
+ .pageSettings .buttons {
+    grid-template-columns: initial;
+ }

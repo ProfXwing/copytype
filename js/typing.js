@@ -1,5 +1,4 @@
 // TODO: make this file smaller
-// TODO: I might need to redo typed in a way that can use strict space and stop on word, maybe just redo .join("").split(" ") into its own function
 import {
     showDialog
 } from "./dialogs.js";
@@ -8,6 +7,9 @@ import {
     stopTimer,
     updateStats
 } from "./timer.js";
+
+class WrongSpace {}
+
 
 export var currentBookStats;
 var currentBookData;
@@ -95,6 +97,19 @@ export function switchContent(div) {
 
 //     return currentTyped;
 // }
+
+function getShownWordText(index) {
+    let shownWord = "";
+    for (let letter of $("#words").find(".word").eq(index).children()) {
+        if (letter.innerHTML == `<i class="fas fa-angle-down"></i>`) {
+            shownWord += "\n";
+        } else {
+            shownWord += letter.innerText;
+        }
+    }
+    return shownWord;
+    // $("#words").find(".word").eq(currentTypedWords.length - 1).text()
+}
 
 export function getCorrectChars() {
     let correctChars = 0;
@@ -233,7 +248,6 @@ export async function saveTyping() {
         // Bookmark
         currentBookStats.typedPos += getTypedAsWords().length - 1;
         currentBookStats.wpm.correctChars += getCorrectChars();
-        // console.log(currentBookStats);
         await window.electron.saveBookStats(currentBookStats);
     }
 }
@@ -335,7 +349,6 @@ function prevWordSet() {
             } else {
                 $(currentWord).append(`<letter>${char}</letter>`);
             }
-
         }
     }
 
@@ -352,12 +365,9 @@ function prevWordSet() {
             currentBookStats.typedPos++;
         }
 
-        if (!Object.keys(pageLengths).includes(currentPage.toString()))
-            pageLengths[currentPage] = {
-                startPos: currentBookStats.typedPos,
-                endPos: currentBookStats.typedPos + text.length,
-                chapter: currentBookStats.chapter
-            }
+        if (!Object.keys(pageLengths).includes(currentPage.toString())) {
+            setPageLengths();
+        }
 
         // windowResize();
         updateCaret(true);
@@ -419,36 +429,85 @@ export function nextWordSet(keepCurrent = false) {
             } else {
                 $(currentWord).append(`<letter>${char}</letter>`);
             }
+        }
 
+    }
+
+    // Styles words that are already typed
+    if (keepCurrent) {
+        let words = $("#words").find(".word");
+        let currentTyped = getTypedAsWords();
+        for (let i = 0; i < currentTyped.length; i++) {
+            let word = $(words[i]);
+
+            if (i != currentTyped.length - 1 && currentTyped[i] != text[i] && !settings.blindMode) {
+                word.addClass("error");
+            }
+
+
+            let letters = word.find("letter");
+            for (let j = 0; j < letters.length; j++) {
+                if (j > currentTyped[i].length - 1 && !(settings.blindMode && i != currentTyped.length - 1)) {
+                    break;
+                }
+                if (currentTyped[i].charAt(j) != text[i].charAt(j) && !settings.blindMode) {
+                    $(letters[j]).addClass("incorrect");
+                } else {
+                    $(letters[j]).addClass("correct");
+                }
+            }
+
+            while (word.find("letter").length < currentTyped[i].length) {
+
+                // letter should be the next letter to add
+                // next letter to add should use word.find("letter").length, as that is the amount of letters currently added
+                let letter = currentTyped[i].charAt(word.find("letter").length)
+                if (letter == "\n" || letter == " ") {
+                    letter = "_";
+                }
+
+                word.append($(`<letter class="incorrect">${letter}</letter>`))
+            }
         }
     }
+
+
+
 
     $("#words").append("<div id='caret'></div>");
 
     // Once the list of 100 words has loaded, remove the words that aren't on the screen 
     $("#caret").ready(function () {
-        for (let child of $("#words").find("div").toArray().reverse()) {
-            if ($(child).position().top > $(window).height() - 120 && $(child).attr('id') != "caret") {
-                child.remove();
-                text.pop();
-                if ($("#words").children().eq(-2).prop("nodeName") == "BR") {
-                    $("#words").children().eq(-2).remove();
-                }
-            }
-        }
-        console.log(text);
+        removeWordsOffScreen();
 
-        if (!Object.keys(pageLengths).includes(currentPage.toString()))
-            pageLengths[currentPage] = {
-                startPos: currentBookStats.typedPos,
-                endPos: currentBookStats.typedPos + text.length,
-                chapter: currentBookStats.chapter
-            }
+        if (!Object.keys(pageLengths).includes(currentPage.toString())) {
+            setPageLengths();
+        }
 
         // windowResize();
         updateCaret(true);
         showWords();
     });
+}
+
+function removeWordsOffScreen() {
+    for (let child of $("#words").find("div").toArray().reverse()) {
+        if ($(child).position().top > $(window).height() - 120 && $(child).attr('id') != "caret") {
+            child.remove();
+            text.pop();
+            if ($("#words").children().eq(-2).prop("nodeName") == "BR") {
+                $("#words").children().eq(-2).remove();
+            }
+        }
+    }
+}
+
+function setPageLengths() {
+    pageLengths[currentPage] = {
+        startPos: currentBookStats.typedPos,
+        endPos: currentBookStats.typedPos + text.length,
+        chapter: currentBookStats.chapter
+    }
 }
 
 // Checks if you can type
@@ -457,15 +516,29 @@ function canType(key) {
     let typedWord = currentTypedWords[currentTypedWords.length - 1];
     let correctWord = text[currentTypedWords.length - 1];
 
-    // Don't allow overtyping, essentially stop on letter at the end of the word, not the best idea
-    // TODO: different overtyping solutions
-    if (typedWord.length == correctWord.length && key != " ") {
-        currentBookStats.accuracy.typedChars++;
+    if (key == "Enter" && correctWord[typedWord.length] != "\n") {
         return false;
     }
 
+    if (settings.stopOnError == "letter") {
+        let typedLetter = key;
+        if (key == "Enter") typedLetter = "\n";
+        if (!(typedWord.length == correctWord.length && typedLetter == " ")) {
+            if (correctWord[typedWord.length] != typedLetter) {
+                currentBookStats.accuracy.typedChars++;
+                return false;
+            }
+        }
+    }
+    // if (settings.stopOnError == "letter" && (correctWord[typedWord.length] != key && !(typedWord.length == correctWord.length && key == " "))) {
+    //     console.log("key", key);
+    //     console.log("correct letter", correctWord[typedWord.length]);
+    //     currentBookStats.accuracy.typedChars++;
+    //     return false;
+    // }
+
     let keyNotSpace = true;
-    if (key == " " && !settings.strictSpace) {
+    if (key == " " && !settings.strictSpace && settings.stopOnError != "word") {
         keyNotSpace = false;
     }
     if (!$("#words").hasClass("hidden") && (typedWord.length - correctWord.length != 20 || key == " ") &&
@@ -488,17 +561,48 @@ function checkCorrect() {
 function typeKey(e) {
     if (text.length > 0) {
         if (canType(e.key) && !e.ctrlKey) {
+            let typedAsWords = getTypedAsWords();
+            let correctWord = text[typedAsWords.length - 1]
+            let typedWord = typedAsWords[typedAsWords.length - 1];
+            
             if (e.key == "Enter") {
                 typed.push("\n");
+                typedAsWords = getTypedAsWords();
+                typedWord = typedAsWords[typedAsWords.length - 1];
 
             } else {
-                if (settings.strictSpace && e.key == " " && getTypedAsWords()[getTypedAsWords().length - 1].length == 0) {
+                if ((settings.strictSpace || settings.stopOnError == "word") && e.key == " " && 
+                     typedWord.length == 0) {
+                    typed.push(new WrongSpace());
+                    
+                } else if (settings.stopOnError == "word" && e.key == " " && 
+                           correctWord != typedWord) {
                     typed.push(new WrongSpace());
                 } else {
                     typed.push(e.key);
                 }
             }
             checkCorrect();
+
+            if (e.key == "Enter") {
+                if (settings.stopOnError == "word") {
+                    if (correctWord == typedWord) {
+                        typed.push(" ")
+                    }
+                } else {
+                    typed.push(" ");
+                }
+            }
+            
+
+            let currentTypedWords = getTypedAsWords();
+            if (currentTypedWords.length > text.length) {
+                nextWordSet();
+                updateCaret();
+                return;
+            }
+
+
             if (!currentBookStats.startedBook) {
                 currentBookStats.startedBook = true;
                 $("#chapter-label").addClass("hide-chapter-label");
@@ -519,7 +623,6 @@ function typeKey(e) {
             // ---------------------- Letter styling (correct or wrong) ---------------------------
             let lastTypedLetter = typed[typed.length - 1];
 
-            let currentTypedWords = getTypedAsWords();
             let currentTypedWord = currentTypedWords[currentTypedWords.length - 1].split("");
 
             let lastShownLetters = $("#words").find("div").eq(currentTypedWords.length - 1).children();
@@ -548,10 +651,6 @@ function typeKey(e) {
                 if (currentTypedWord.length > 0) {
                     if (lastTypedLetter == lastCorrectLetter && !lastShownLetter.hasClass("correct") && lastShownLetter.html() != " ") {
                         lastShownLetter.addClass("correct");
-                        if (e.key == "Enter") {
-                            typed.push(" ");
-                        }
-
                     } else if (lastTypedLetter != lastCorrectLetter && !lastShownLetter.hasClass("incorrect")) {
                         lastShownLetter.addClass("incorrect");
                     }
@@ -583,24 +682,25 @@ function typeKey(e) {
             }
 
 
-            // I decided that overtyping was probably bad considering the page lengths are fixed. maybe do something here later
             // ------------------- Overtyping ---------------------------
-            let typedWord = currentTypedWords[currentTypedWords.length - 1];
+            typedWord = currentTypedWords[currentTypedWords.length - 1];
 
-            let correctWord = text[currentTypedWords.length - 1];
-            // let currentShownWord = getWordsOnScreen().split(" ")[currentTypedWords.length - 1];
+            correctWord = text[currentTypedWords.length - 1];
+            let currentShownWord = getShownWordText(currentTypedWords.length - 1);
 
-            // if (typedWord.length > correctWord.length && typedWord.length > currentShownWord.length) {
-            //     let letter = (e.key == "Enter") ? "_" : typedWord.substring(typedWord.length - 1);
-            //     let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(typedWord.split("").length - 2);
+            if (typedWord.length > correctWord.length && typedWord.length > currentShownWord.length) {
+                let letter = (e.key == "Enter") ? "_" : typedWord.substring(typedWord.length - 1);
+                let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(typedWord.split("").length - 2);
 
-            //     $(`<letter class="incorrect">${letter}</letter>`).insertAfter(currentEndLetter);
-            // }
-            // ---------------------------------------------------------------
+                if (typed[typed.length - 1] instanceof WrongSpace) {
+                    letter = "_";
+                }
+                $(`<letter class="incorrect">${letter}</letter>`).insertAfter(currentEndLetter);
 
-            if (currentTypedWords.length == text.length && typedWord == correctWord) {
-                nextWordSet();
+                removeWordsOffScreen();
+                setPageLengths();
             }
+            // ---------------------------------------------------------------
 
             // windowResize();
             updateCaret();
@@ -619,25 +719,37 @@ function checkKey(e) {
         let currentTypedWords = getTypedAsWords();
         let currentTypedWordsLength = currentTypedWords.length - 1;
         let currentTypedWord = currentTypedWords[currentTypedWordsLength].split("");
-        let lastShownLetter = $("#words").find("div").eq(currentTypedWordsLength).children().eq(currentTypedWord.length - 1);
+        let lastShownWord = $("#words").find("div").eq(currentTypedWordsLength);
+        let lastShownLetter = lastShownWord.children().eq(currentTypedWord.length - 1);
 
         // Removes nlChar styling 
         if (currentTypedWord.length == 0 && typed[typed.length - 1] == "\n") {
             currentTypedWordsLength = currentTypedWords.length - 2;
             currentTypedWord = currentTypedWords[currentTypedWordsLength].split("");
             lastShownLetter = $("#words").find("div").eq(currentTypedWordsLength).children().eq(currentTypedWord.length);
-
         }
+
+
 
         lastShownLetter.removeClass("correct");
         lastShownLetter.removeClass("incorrect");
 
         // ---------------------------------------------------------------------------------------
 
-
         typed.pop();
 
         currentTypedWords = getTypedAsWords();
+        currentTypedWordsLength = currentTypedWords.length - 1;
+        currentTypedWord = currentTypedWords[currentTypedWordsLength].split("");
+
+        if (settings.blindMode) {
+            let newShownWord = $("#words").find("div").eq(currentTypedWordsLength);
+            let wordChildren = newShownWord.children();
+            for (let child of wordChildren.slice(currentTypedWord.length)) {
+                $(child).removeClass("correct").removeClass("incorrect");
+            }
+        }
+
 
         let currentWordElement = $("#words").find("div").eq(currentTypedWords.length - 1);
         if (currentWordElement.hasClass("error")) {
@@ -645,19 +757,17 @@ function checkKey(e) {
         }
 
 
-        // removed overtyping for now.
         // -------------------  Overtyping ----------------------------
-        // currentTypedWords = getTypedAsWords();
-        // let lastTypedWord = currentTypedWords[currentTypedWords.length - 1];
+        currentTypedWords = getTypedAsWords();
+        let lastTypedWord = currentTypedWords[currentTypedWords.length - 1];
 
-        // let correctWord = text[currentTypedWords.length - 1];
-        // let currentShownWord = getWordsOnScreen().split(" ")[currentTypedWords.length - 1];
+        let correctWord = text[currentTypedWords.length - 1];
+        let currentShownWord = getShownWordText(currentTypedWords.length - 1);
 
-        // if (lastTypedWord.length >= correctWord.length && lastTypedWord.length < currentShownWord.length) {
-        //     let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(currentShownWord.length - 1);
-
-        //     currentEndLetter.remove();
-        // }
+        if (lastTypedWord.length >= correctWord.length && lastTypedWord.length < currentShownWord.length) {
+            let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(currentShownWord.length - 1);
+            currentEndLetter.remove();
+        } 
         // -------------------------------------------------------------
     }
     if (text.length > 0) {
@@ -702,7 +812,6 @@ $(window).resize(function () {
     }
 });
 
-class WrongSpace {}
 
 function getTypedAsWords() {
     let words = [""];

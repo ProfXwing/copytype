@@ -3,6 +3,7 @@ class Settings {
         this.blindMode = false;
         this.strictSpace = false;
         this.smoothCaret = true;
+        this.stopOnError = 'off';
         this.wordCount = 150;
         this.wpmCounter = true;
         this.accCounter = true;

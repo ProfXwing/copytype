@@ -23,9 +23,6 @@ export function updateStats() {
 
         } else if (currentBookStats.wpm.timeTyping != 0) {
             wpm = Math.round(correctChars / 5 / (currentBookStats.wpm.timeTyping / 1000 / 60));
-            console.log(wpm);
-            console.log(correctChars);
-            console.log(currentBookStats.wpm.timeTyping);
         }
 
         let accuracy;
@@ -43,11 +40,7 @@ export function updateStats() {
 
 export function stopTimer() {
     if (timerStarted) {
-        // if (Date.now() - startTime > 5100) {
-            currentBookStats.wpm.timeTyping += Date.now() - startTime - 5000;
-        // } else {
-            // currentBookStats.wpm.timeTyping += 100;
-        // }
+        currentBookStats.wpm.timeTyping += Date.now() - startTime - 5000;
         timerStarted = false;
     }
 }

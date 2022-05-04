@@ -70,6 +70,15 @@ contextBridge.exposeInMainWorld('electron', {
 
 if (!fs.existsSync("settings.json")) {
     library.defaultSettings();
+} else {
+    let settings = library.getSettings();
+    let defaultSettings = new Settings();
+    for (let setting in defaultSettings) {
+        if (settings[setting] === undefined) {
+            settings[setting] = defaultSettings[setting];
+        }
+    }
+    library.saveSettings(settings);
 }
 
 
