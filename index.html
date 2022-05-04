@@ -321,6 +321,45 @@
                     <div class="button" indicateTypos="replace" tabindex="0">replace</div>
                 </div>
             </div>
+
+            <div class="section hideExtraLetters">
+                <h1>hide extra letters</h1>
+                <div class="text">Hides extra letters. This will completely avoid words jumping lines (due to changing width), but might feel a bit confusing when you press a key and nothing happens.</div>
+                <div class="buttons">
+                    <div class="button" hideExtraLetters="false" tabindex="0">off</div>
+                    <div class="button" hideExtraLetters="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section lazyMode">
+                <h1>lazy mode</h1>
+                <div class="text">Replaces accented letters with their normal equivalents.</div>
+                <div class="buttons">
+                    <div class="button" lazyMode="false" tabindex="0">off</div>
+                    <div class="button" lazyMode="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section smoothCaret">
+                <h1>smooth caret</h1>
+                <div class="text">The caret will move smoothly between letters and words.</div>
+                <div class="buttons">
+                    <div class="button" smoothCaret="false" tabindex="0">off</div>
+                    <div class="button" smoothCaret="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section caretStyle">
+                <h1>caret style</h1>
+                <div class="text">Change the style of the caret during the test.</div>
+                <div class="buttons">
+                    <div class="button" caretStyle="off" tabindex="0">off</div>
+                    <div class="button" caretStyle="default" tabindex="0">|</div>
+                    <div class="button" caretStyle="block" tabindex="0">▮</div>
+                    <div class="button" caretStyle="outline" tabindex="0">▯</div>
+                    <div class="button" caretStyle="underline" tabindex="0">_</div>
+                </div>
+            </div>
         </div>
 
         <!-- <div id="group-theme" class="section-group-title">
@@ -343,10 +382,10 @@
                 //strict space
                 //stop on error (off, word, letter)
                 //confidence mode
-                indicate typos (off, below, replace)
-                hide extra letters (off, default on)
-                lazy mode
-                smooth caret
+                //indicate typos (off, below, replace)
+                //hide extra letters (off, default on)
+                //lazy mode
+                //smooth caret
                 caret style (maybe)
                 highlight mode
                 always show cpm

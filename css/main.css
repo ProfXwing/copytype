@@ -784,3 +784,34 @@ body {
     text-shadow: none;
     width: 100%;
  }
+
+ #caret.off {
+     width: 0;
+ }
+
+ #caret.default {
+     width: 3px;
+ }
+
+ #caret.block, #caret.outline {
+    border-radius: 0;
+    z-index: -1;
+ }
+
+ #caret.block {
+    width: 0.4em;
+ }
+ #caret.outline {
+    width: 0.39em;
+ }
+
+ #caret.outline {
+    background: 0 0;
+    border: 1px solid var(--caret-color);
+ }
+
+ #caret.underline {
+    height: 2px;
+    margin-top: 1.3em;
+    width: .4em;
+ }

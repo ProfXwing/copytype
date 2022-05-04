@@ -6,6 +6,9 @@ class Settings {
         this.stopOnError = 'off';
         this.confidenceMode = 'off';
         this.indicateTypos = 'off';
+        this.hideExtraLetters = false;
+        this.lazyMode = false;
+        this.caretStyle = 'default';
         this.wordCount = 150;
         this.wpmCounter = true;
         this.accCounter = true;

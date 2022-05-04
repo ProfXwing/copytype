@@ -79,7 +79,7 @@ if (!fs.existsSync("settings.json")) {
         }
     }
 
-    if (!fs.existsSync(settings.currentBook)) {
+    if (!fs.existsSync('library/' + settings.currentBook)) {
         delete settings.currentBook;
     }
     library.saveSettings(settings);

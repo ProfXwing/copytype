@@ -44,11 +44,46 @@ var updateWPM = setInterval(() => {
 
 var showChapterEvent;
 
+
+
+
+const accents = [
+    ["áàâäåãąą́āą̄ă", "a"],
+    ["éèêëẽęę́ēę̄ėě", "e"],
+    ["íìîïĩįį́īį̄", "i"],
+    ["óòôöøõóōǫǫ́ǭő", "o"],
+    ["úùûüŭũúūůű", "u"],
+    ["ńň", "n"],
+    ["çĉčć", "c"],
+    ["ř", "r"],
+    ["ď", "d"],
+    ["ťț", "t"],
+    ["æ", "ae"],
+    ["œ", "oe"],
+    ["ẅŵ", "w"],
+    ["ĝğg̃", "g"],
+    ["ĥ", "h"],
+    ["ĵ", "j"],
+    ["ńñ", "n"],
+    ["ŝśšș", "s"],
+    ["żźž", "z"],
+    ["ÿỹýÿŷ", "y"],
+    ["łľ", "l"],
+    ["أإآ", "ا"],
+    ["َ", ""],
+    ["ُ", ""],
+    ["ِ", ""],
+    ["ْ", ""],
+    ["ً", ""],
+    ["ٌ", ""],
+    ["ٍ", ""],
+    ["ّ", ""],
+];
+
+
 if (settings.currentBook) {
     initTyping(settings.currentBook);
 }
-
-
 
 window.onload = function () {
     $("#main-page").removeClass("hidden");
@@ -147,7 +182,14 @@ function updateCaret(init = false) {
             currentWordLength = 0;
         }
 
-        let lastLetter = $("#words").find("div").eq(typedWordsLength).children().eq(currentWordLength);
+        let lettersList = $("#words").find(".word").eq(typedWordsLength).children();
+        let lastLetter;
+        if (currentWord.length > lettersList.length) {
+            lastLetter = lettersList.eq(lettersList.length - 1);
+        } else {
+            lastLetter = lettersList.eq(currentWordLength);
+        }
+        // let lastLetter = $("#words").find("div").eq(typedWordsLength).children().eq(currentWordLength);
 
         let charPosition = lastLetter.position(); //typed.length - 1 + getSkippedLetters()
         let width = lastLetter.width()
@@ -164,7 +206,13 @@ function updateCaret(init = false) {
             width = 0;
             charPosition = $("#words").find("div").eq(0).children().eq(0).position();
         }
-        caretPosX = (currentWord.length == 0) ? charPosition.left - caret.width() : charPosition.left + width;
+        
+        if (settings.caretStyle == "default") {
+            caretPosX = (currentWord.length == 0) ? charPosition.left - caret.width() : charPosition.left + width;
+        } else {
+            caretPosX = (currentWord.length == 0) ? charPosition.left : charPosition.left + width;
+        }
+
         caretPosY = charPosition.top;
 
         let duration = (settings.smoothCaret) ? 100 : 0;
@@ -269,7 +317,9 @@ function showChapterLabel() {
 }
 
 function changeDivisionText() {
-    $("#chapter-label").text(`${currentBookData.division} ${currentBookStats.chapter + 1}`);
+    if (currentBookData.division != "") {
+        $("#chapter-label").text(`${currentBookData.division} ${currentBookStats.chapter + 1}`);
+    }
 }
 
 export function prevButton() {
@@ -331,6 +381,15 @@ function prevWordSet() {
         text = fullText.slice(currentBookStats.typedPos);
         text.splice(startPos - currentBookStats.typedPos);
     }
+
+    if (settings.lazyMode) {
+        let new_text = [];
+        for (let word of text) {
+            new_text.push(replaceAccents(word));
+        }
+        text = new_text;
+    }
+
 
     hideWords();
 
@@ -415,6 +474,15 @@ export function nextWordSet(keepCurrent = false) {
         text.splice(settings.wordCount);
     }
 
+    if (settings.lazyMode) {
+        let new_text = [];
+        for (let word of text) {
+            new_text.push(replaceAccents(word));
+        }
+        text = new_text;
+    }
+
+
     hideWords();
     $("#words").empty();
     for (let word of text) {
@@ -471,7 +539,7 @@ export function nextWordSet(keepCurrent = false) {
         }
     }
 
-    $("#words").append("<div id='caret'></div>");
+    $("#words").append(`<div id='caret' class='${settings.caretStyle}'></div>`);
 
     // Once the list of 100 words has loaded, remove the words that aren't on the screen 
     $("#caret").ready(function () {
@@ -527,13 +595,7 @@ function canType(key) {
             }
         }
     }
-    // if (settings.stopOnError == "letter" && (correctWord[typedWord.length] != key && !(typedWord.length == correctWord.length && key == " "))) {
-    //     console.log("key", key);
-    //     console.log("correct letter", correctWord[typedWord.length]);
-    //     currentBookStats.accuracy.typedChars++;
-    //     return false;
-    // }
-
+    
     let keyNotSpace = true;
     if (key == " " && !settings.strictSpace && settings.stopOnError != "word") {
         keyNotSpace = false;
@@ -581,39 +643,14 @@ function typeKey(e) {
             }
             checkCorrect();
 
-            if (e.key == "Enter") {
-                if (settings.stopOnError == "word") {
-                    if (correctWord == typedWord) {
-                        typed.push(" ")
-                    }
-                } else {
-                    typed.push(" ");
-                }
-            }
-
-
             let currentTypedWords = getTypedAsWords();
+
             if (currentTypedWords.length > text.length) {
                 nextWordSet();
                 updateCaret();
                 return;
             }
 
-
-            if (!currentBookStats.startedBook) {
-                currentBookStats.startedBook = true;
-                $("#chapter-label").addClass("hide-chapter-label");
-            }
-
-            if (!timerStarted) {
-                startTimer();
-            }
-
-            // probably shouldn't do this, but i'm gonna do it anyway 😈
-            clearTimeout(stopTimerEvent);
-            stopTimerEvent = setTimeout(() => {
-                stopTimer(5000);
-            }, 5000);
 
             // ---------------------- Letter styling (correct or wrong) ---------------------------
             let lastTypedLetter = typed[typed.length - 1];
@@ -652,6 +689,7 @@ function typeKey(e) {
                             lastShownLetter.append(`<hint>${lastTypedLetter}</div>`);
                         } else if (settings.indicateTypos == "replace") {
                             lastShownLetter.text(lastTypedLetter);
+                            lastShownLetter.removeClass("nlChar");
                         }
                     }
                 }
@@ -681,25 +719,60 @@ function typeKey(e) {
                 }
             }
 
+            if (e.key == "Enter") {
+                if (settings.stopOnError == "word") {
+                    if (correctWord == typedWord) {
+                        typed.push(" ")
+                    }
+                } else {
+                    typed.push(" ");
+                }
+            }
+
+
+            currentTypedWords = getTypedAsWords();
+
+
+
+            if (!currentBookStats.startedBook) {
+                currentBookStats.startedBook = true;
+                $("#chapter-label").addClass("hide-chapter-label");
+            }
+
+            if (!timerStarted) {
+                startTimer();
+            }
+
+            // probably shouldn't do this, but i'm gonna do it anyway 😈
+            clearTimeout(stopTimerEvent);
+            stopTimerEvent = setTimeout(() => {
+                stopTimer(5000);
+            }, 5000);
+
+            
+
 
             // ------------------- Overtyping ---------------------------
-            typedWord = currentTypedWords[currentTypedWords.length - 1];
+            if (!settings.hideExtraLetters) {
+                typedWord = currentTypedWords[currentTypedWords.length - 1];
 
-            correctWord = text[currentTypedWords.length - 1];
-            let currentShownWord = getShownWordText(currentTypedWords.length - 1);
+                correctWord = text[currentTypedWords.length - 1];
+                let currentShownWord = getShownWordText(currentTypedWords.length - 1);
 
-            if (typedWord.length > correctWord.length && typedWord.length > currentShownWord.length) {
-                let letter = (e.key == "Enter") ? "_" : typedWord.substring(typedWord.length - 1);
-                let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(typedWord.split("").length - 2);
+                if (typedWord.length > correctWord.length && typedWord.length > currentShownWord.length) {
+                    let letter = (e.key == "Enter") ? "_" : typedWord.substring(typedWord.length - 1);
+                    let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(typedWord.split("").length - 2);
 
-                if (typed[typed.length - 1] instanceof WrongSpace) {
-                    letter = "_";
+                    if (typed[typed.length - 1] instanceof WrongSpace) {
+                        letter = "_";
+                    }
+                    $(`<letter class="incorrect">${letter}</letter>`).insertAfter(currentEndLetter);
+
+                    removeWordsOffScreen();
+                    setPageLengths();
                 }
-                $(`<letter class="incorrect">${letter}</letter>`).insertAfter(currentEndLetter);
-
-                removeWordsOffScreen();
-                setPageLengths();
             }
+
             // ---------------------------------------------------------------
 
             // windowResize();
@@ -719,7 +792,7 @@ function checkKey(e) {
         let currentTypedWords = getTypedAsWords();
         let currentTypedWordsLength = currentTypedWords.length - 1;
         let currentTypedWord = currentTypedWords[currentTypedWordsLength].split("");
-        let correctWord = text[currentTypedWordsLength][currentTypedWord.length - 1];
+        let correctLetter = text[currentTypedWordsLength][currentTypedWord.length - 1];
         let lastShownWord = $("#words").find("div").eq(currentTypedWordsLength);
         let lastShownLetter = lastShownWord.children().eq(currentTypedWord.length - 1);
 
@@ -736,8 +809,11 @@ function checkKey(e) {
         lastShownLetter.removeClass("incorrect");
         lastShownLetter.find("hint").remove();
 
-        if (lastShownLetter.text() != correctWord) {
-            lastShownLetter.text(correctWord);
+        if (correctLetter == "\n" && !lastShownLetter.hasClass("nlChar")) {
+            lastShownLetter.addClass("nlChar");
+            lastShownLetter.html(`<i class="fas fa-angle-down"></i>`);
+        } else if (lastShownLetter.text() != correctLetter) {
+            lastShownLetter.html(correctLetter);
         }
 
         // ---------------------------------------------------------------------------------------
@@ -767,7 +843,7 @@ function checkKey(e) {
         currentTypedWords = getTypedAsWords();
         let lastTypedWord = currentTypedWords[currentTypedWords.length - 1];
 
-        correctWord = text[currentTypedWords.length - 1];
+        let correctWord = text[currentTypedWords.length - 1];
         let currentShownWord = getShownWordText(currentTypedWords.length - 1);
 
         if (lastTypedWord.length >= correctWord.length && lastTypedWord.length < currentShownWord.length) {
@@ -784,12 +860,11 @@ function checkKey(e) {
 
             let hasError = false;
             for (let letter of lastWord.children()) {
-                console.log(letter);
                 if ($(letter).hasClass("incorrect")) {
                     hasError = true;
                 }
             }
-            
+
             let toDelete = false;
             if (e.key == "Backspace") {
                 if (settings.confidenceMode == "max") {
@@ -802,7 +877,7 @@ function checkKey(e) {
                     toDelete = true;
                 }
             }
-            
+
             if (toDelete) {
                 // Account for mac users because mac is quirky
                 if ((window.electron.operatingSystem != 'darwin' && e.ctrlKey) || (window.electron.operatingSystem == 'darwin' && e.altKey)) {
@@ -857,4 +932,27 @@ function getTypedAsWords() {
         }
     }
     return words;
+}
+
+function replaceAccents(word) {
+    let newWord = "";
+    for (let char of word) {
+        // check if char is uppercase
+        let upper = false;
+        if (char.toUpperCase() == char) {
+            upper = true;
+        }
+
+        for (let accent of accents) {
+            if (accent[0].split("").includes(char.toLowerCase())) {
+                char = accent[1];
+            }
+        }
+
+        if (upper) {
+            char = char.toUpperCase();
+        }
+        newWord += char;
+    }
+    return newWord;
 }
