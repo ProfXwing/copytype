@@ -9,6 +9,7 @@ class Settings {
         this.hideExtraLetters = false;
         this.lazyMode = false;
         this.caretStyle = 'default';
+        this.highlightMode = 'letter';
         this.wordCount = 150;
         this.wpmCounter = true;
         this.accCounter = true;

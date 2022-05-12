@@ -815,3 +815,7 @@ body {
     margin-top: 1.3em;
     width: .4em;
  }
+
+ .word letter.incorrect.extra {
+    color: var(--error-extra-color);
+ }
