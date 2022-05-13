@@ -13,7 +13,6 @@ import {
     saveTyping,
     nextButton,
     prevButton,
-    settings,
 } from './typing.js';
 
 $("#app-header").click(continueTyping);

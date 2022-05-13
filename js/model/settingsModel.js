@@ -10,9 +10,15 @@ class Settings {
         this.lazyMode = false;
         this.caretStyle = 'default';
         this.highlightMode = 'letter';
+        this.alwaysShowCpm = false;
+        this.flipTestColors = false;
+        this.colorfulMode = false;
+        this.showLiveWpm = false;
+        this.showLiveAcc = false;
+        this.capsLockWarning = true;
+        this.showPageLabel = 'off';
+
         this.wordCount = 150;
-        this.wpmCounter = true;
-        this.accCounter = true;
         this.currentTheme = 'serika_dark';
         this.favThemes = [];
     }

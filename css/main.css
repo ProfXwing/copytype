@@ -103,7 +103,7 @@ body {
     animation-duration: 1s;
 }
 
-.correct {
+.word letter.correct {
     color: var(--text-color);
 }
 
@@ -111,6 +111,28 @@ body {
     color: var(--error-color);
     position:relative;
 }
+
+#words.flipped .word letter.correct {
+    color: var(--sub-color);
+}
+
+#words.colorfulMode .word letter.correct {
+    color: var(--main-color);
+}
+
+#words.colorfulMode .word letter.correct {
+    color: var(--main-color);
+}
+
+#words.flipped.colorfulMode .word letter.correct {
+    color: var(--sub-color)
+}
+
+#words.flipped.colorfulMode .word {
+    color: var(--main-color)
+}
+
+
 
 #typing letter {
     border-bottom-style: solid;
@@ -123,12 +145,16 @@ body {
     border-bottom: 2px solid var(--error-color);
 }
 
-.word {
+#words .word {
     display: inline-block;
     margin: .57rem;
     line-height: 39px;
     border-bottom: 3px solid transparent;
 
+}
+
+#words.flipped .word {
+    color: var(--text-color);
 }
 
 .error {
@@ -656,19 +682,19 @@ body {
 }
 
 @media only screen and (max-width: 1450px) {
-    .buttons {
+    .fav-themes,  .all-themes {
         grid-template-columns: 1fr 1fr 1fr;
     }
 }
 
 @media only screen and (max-width: 1150px) {
-    .buttons {
+    .fav-themes,  .all-themes {
         grid-template-columns: 1fr 1fr;
     }
 }
 
 @media only screen and (max-width: 825px) {
-    .buttons {
+    .fav-themes,  .all-themes {
         grid-template-columns: 1fr;
     }
 }
@@ -765,9 +791,9 @@ body {
     grid-template-columns: 2fr 1fr;
  }
 
- .pageSettings .buttons {
+ /* .pageSettings .buttons {
     grid-template-columns: initial;
- }
+ } */
 
  .word letter.incorrect hint {
     bottom: -0.75em;
@@ -818,4 +844,22 @@ body {
 
  .word letter.incorrect.extra {
     color: var(--error-extra-color);
+ }
+
+ #capsWarning {
+    background: var(--main-color);
+    border-radius: 15px;
+    color: var(--bg-color);
+    display: table;
+    left: 50%;
+    padding: 1.5REM;
+    pointer-events: none;
+    position: absolute;
+    transform: translateX(-50%);
+    transition: .25s;
+    z-index: 999;
+ }
+
+ .showPageLabel .button {
+    white-space: nowrap;
  }

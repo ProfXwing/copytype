@@ -1,6 +1,7 @@
 import {
     switchContent,
-    saveTyping
+    saveTyping,
+    settings
 } from "./typing.js";
 
 var bookStats;
@@ -48,11 +49,21 @@ function loadDateCreated() {
 }
 
 function loadWpmAcc() {
-    let wpm = 0;
-    let rawWpm = 0;
+    let wpm = 0, rawWpm = 0;
+
+    if (settings.alwaysShowCpm) {
+        $("#stats").find("#wpm").parent().find('.title').text("avg cpm");
+        $("#stats").find("#raw-wpm").parent().find('.title').text("raw cpm");
+    }
+
     if (bookStats.wpm.timeTyping != 0) {
-        wpm = Math.round(bookStats.wpm.correctChars / 5 / (bookStats.wpm.timeTyping / 1000 / 60));
-        rawWpm = Math.round(bookStats.accuracy.typedChars / 5 / (bookStats.wpm.timeTyping / 1000 / 60));
+        if (!settings.alwaysShowCpm) {
+            wpm = Math.round(bookStats.wpm.correctChars / 5 / (bookStats.wpm.timeTyping / 1000 / 60));
+            rawWpm = Math.round(bookStats.accuracy.typedChars / 5 / (bookStats.wpm.timeTyping / 1000 / 60));
+        } else {
+            wpm = Math.round(bookStats.wpm.correctChars / (bookStats.wpm.timeTyping / 1000 / 60));
+            rawWpm = Math.round(bookStats.accuracy.typedChars / (bookStats.wpm.timeTyping / 1000 / 60));
+        }
     }
     $("#stats").find('#wpm').text(wpm);
     $("#stats").find('#accuracy').text(`${Math.floor(bookStats.accuracy.correctChars / bookStats.accuracy.typedChars * 100) || 100}%`)

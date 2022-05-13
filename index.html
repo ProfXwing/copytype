@@ -13,6 +13,7 @@
     <script type="module" src="js/stats.js"></script>
     <script type="module" src="js/themes.js"></script>
     <script type="module" src="js/settings.js"></script>
+    <script type="module" src="js/caps.js"></script>
 </head>
 
 <body>
@@ -196,6 +197,7 @@
 
         <!-- Typing -->
         <div id="typing" class="hidden">
+            <div id="capsWarning" class="hidden"><i class="fas fa-lock"></i> Caps Lock</div>
             <label id="chapter-label" class="hide-chapter-label"></label>
             <br>
             <div id="page-selectors" class="hidden">
@@ -285,7 +287,8 @@
 
             <div class="section strictSpace">
                 <h1>strict space</h1>
-                <div class="text">Pressing space at the beginning of a word will insert a space character when this mode is enabled.</div>
+                <div class="text">Pressing space at the beginning of a word will insert a space character when this mode
+                    is enabled.</div>
                 <div class="buttons">
                     <div class="button" strictSpace="false" tabindex="0">off</div>
                     <div class="button" strictSpace="true" tabindex="0">on</div>
@@ -294,7 +297,8 @@
 
             <div class="section stopOnError">
                 <h1>stop on error</h1>
-                <div class="text">Letter mode will stop input when pressing any incorrect letters. Word mode will not allow you to continue to the next word until you correct all mistakes.</div>
+                <div class="text">Letter mode will stop input when pressing any incorrect letters. Word mode will not
+                    allow you to continue to the next word until you correct all mistakes.</div>
                 <div class="buttons">
                     <div class="button" stopOnError="off" tabindex="0">off</div>
                     <div class="button" stopOnError="word" tabindex="0">word</div>
@@ -304,7 +308,8 @@
 
             <div class="section confidenceMode">
                 <h1>confidence mode</h1>
-                <div class="text">When enabled, you will not be able to go back to previous words to fix mistakes. When turned up to the max, you won't be able to backspace at all.</div>
+                <div class="text">When enabled, you will not be able to go back to previous words to fix mistakes. When
+                    turned up to the max, you won't be able to backspace at all.</div>
                 <div class="buttons">
                     <div class="button" confidenceMode="off" tabindex="0">off</div>
                     <div class="button" confidenceMode="on" tabindex="0">on</div>
@@ -314,7 +319,8 @@
 
             <div class="section indicateTypos">
                 <h1>indicate typos</h1>
-                <div class="text">Shows typos that you've made. Below shows what you typed below the letters and replace will replace the letters with the ones you typed.</div>
+                <div class="text">Shows typos that you've made. Below shows what you typed below the letters and replace
+                    will replace the letters with the ones you typed.</div>
                 <div class="buttons">
                     <div class="button" indicateTypos="off" tabindex="0">off</div>
                     <div class="button" indicateTypos="below" tabindex="0">below</div>
@@ -324,7 +330,8 @@
 
             <div class="section hideExtraLetters">
                 <h1>hide extra letters</h1>
-                <div class="text">Hides extra letters. This will completely avoid words jumping lines (due to changing width), but might feel a bit confusing when you press a key and nothing happens.</div>
+                <div class="text">Hides extra letters. This will completely avoid words jumping lines (due to changing
+                    width), but might feel a bit confusing when you press a key and nothing happens.</div>
                 <div class="buttons">
                     <div class="button" hideExtraLetters="false" tabindex="0">off</div>
                     <div class="button" hideExtraLetters="true" tabindex="0">on</div>
@@ -370,23 +377,103 @@
                     <div class="button" highlightMode="word" tabindex="0">word</div>
                 </div>
             </div>
-        </div>
 
-        <!-- <div id="group-theme" class="section-group-title">
+            <div class="section alwaysShowCpm">
+                <h1>always show cpm</h1>
+                <div class="text">Always shows characters per minute calculation instead of the default words per minute
+                    calculation.</div>
+                <div class="buttons">
+                    <div class="button" alwaysShowCpm="false" tabindex="0">off</div>
+                    <div class="button" alwaysShowCpm="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section flipTestColors">
+                <h1>flip test colors</h1>
+                <div class="text">
+                    By default, typed text is brighter than the future text. When enabled, the colors will be flipped
+                    and the future text will be brighter than the already typed text.</div>
+                <div class="buttons">
+                    <div class="button" flipTestColors="false" tabindex="0">off</div>
+                    <div class="button" flipTestColors="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section colorfulMode">
+                <h1>colorful mode</h1>
+                <div class="text">
+                    When enabled, the test words will use the main color, instead of the text color, making the website
+                    more colorful.</div>
+                <div class="buttons">
+                    <div class="button" colorfulMode="false" tabindex="0">off</div>
+                    <div class="button" colorfulMode="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section showLiveWpm">
+                <h1>live wpm</h1>
+                <div class="text">
+                    Displays a live WPM speed during the test. Updates twice every second.</div>
+                <div class="buttons">
+                    <div class="button" showLiveWpm="false" tabindex="0">off</div>
+                    <div class="button" showLiveWpm="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section showLiveAcc">
+                <h1>live accuracy</h1>
+                <div class="text">
+                    Displays a live WPM speed during the test. Updates twice every second.</div>
+                <div class="buttons">
+                    <div class="button" showLiveAcc="false" tabindex="0">off</div>
+                    <div class="button" showLiveAcc="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section capsLockWarning">
+                <h1>caps lock warning</h1>
+                <div class="text">
+                    Displays a warning when caps lock is on.
+                </div>
+                <div class="buttons">
+                    <div class="button" capsLockWarning="false" tabindex="0">off</div>
+                    <div class="button" capsLockWarning="true" tabindex="0">on</div>
+                </div>
+            </div>
+
+            <div class="section showPageLabel">
+                <h1>page/chapter label</h1>
+                <div class="text">Displays what page/chapter you're on above the selector. (Note: this number might be wrong.)</div>
+                <div class="buttons">
+                    <div class="button" showPageLabel="off" tabindex="0">off</div>
+                    <div class="button" showPageLabel="on" tabindex="0">on</div>
+                    <div class="button" showPageLabel="always on" tabindex="0">always on</div>
+                </div>
+            </div>
+
+
+
+            <!-- <div id="group-theme" class="section-group-title">
                 theme
                 <i class="fas fa-chevron-down close-section"></i>
             </div>
-            <div class="section themes"> -->
-        <!-- <h1>theme</h1> -->
-        <!-- <div class="tabs">
+
+             <div class="section themes">
+                <h1>theme</h1>
+                <div class="tabs">
                     <div class="button active" tab="preset">preset</div>
                     <div class="button" tab="custom">custom</div>
-                </div> -->
-        <!-- <div class="themes-tab">
-                    <div class="fav-themes buttons"></div>
-                    <div class="all-themes buttons"></div>
                 </div>
             </div> -->
+            <div class="themes-tab">
+                <div class="fav-themes buttons"></div>
+                <div class="all-themes buttons"></div>
+            </div>
+        </div>
+
+
+
+       
         <!-- 
                 //blind mode
                 //strict space
@@ -398,28 +485,26 @@
                 //smooth caret
                 //caret style (maybe)
                 //highlight mode
-                always show cpm
-                font size (maybe i guess)
-                font family (should be easy?)
-                flip test colors
-                colorful mode
+                //always show cpm
+                //flip test colors
+                //colorful mode
                 custom background (harder)
                 custom theme
-                favorite themes
-                theme list
+                //favorite themes
+                //theme list
 
 
                 show/hide-----
-                live wpm
-                live accuracy
-                caps lock warning
-                division label (chapter, page)
+                //live wpm
+                //live accuracy
+               // caps lock warning
+                //division label (chapter, page)
 
                 ebook options----
                 Remove from text list (no quotes, new lines, etc.)
                 Text scroll options (page by page, line by line, tape mode)
                 remove punctuation
-                Save words typed per page
+                Save previous pages
 
                 export/import settings
                 reset settings

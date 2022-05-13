@@ -40,7 +40,7 @@ var stopTimerEvent = setTimeout(() => {
 
 setInterval(() => {
     updateStats()
-}, 450);
+}, 500);
 
 var showChapterEvent;
 
@@ -247,16 +247,6 @@ export function initTyping(book) {
     // saves in case another book is loaded
     saveTyping();
 
-    if (settings.wpmCounter || settings.accCounter) {
-        $("#typing-stats").removeClass("hidden");
-    }
-    if (settings.wpmCounter) {
-        $("#wpm-counter").removeClass("hidden");
-    }
-    if (settings.accCounter) {
-        $("#acc-counter").removeClass("hidden");
-    }
-
     $("#page-selectors").removeClass('hidden');
 
     currentBookStats = window.electron.getBookStats(book);
@@ -303,11 +293,14 @@ function showWords() {
 
 function showChapterLabel() {
     changeDivisionText();
-    $("#chapter-label").removeClass("hide-chapter-label");
-    clearTimeout(showChapterEvent);
-    showChapterEvent = setTimeout(() => {
-        $("#chapter-label").addClass("hide-chapter-label")
-    }, 2000)
+
+    if (settings.showPageLabel == 'on') {
+        $("#chapter-label").removeClass("hide-chapter-label");
+        clearTimeout(showChapterEvent);
+        showChapterEvent = setTimeout(() => {
+            $("#chapter-label").addClass("hide-chapter-label")
+        }, 2000)
+    }
 }
 
 function changeDivisionText() {
@@ -429,7 +422,32 @@ function prevWordSet() {
 
 
 export function nextWordSet(keepCurrent = false) {
+    if (settings.flipTestColors) {
+        $("#words").addClass("flipped");
+    } else {
+        $("#words").removeClass("flipped");
+    }
+    if (settings.colorfulMode) {
+        $("#words").addClass("colorfulMode");
+    } else {
+        $("#words").removeClass("colorfulMode");
+    }
+    if (settings.showLiveWpm) {
+        $("#wpm-counter").removeClass("hidden");
+    } else {
+        $("#wpm-counter").addClass("hidden");
+    }
+    if (settings.showLiveAcc) {
+        $("#acc-counter").removeClass("hidden");
+    } else {
+        $("#acc-counter").addClass("hidden");
+    }
+    if (settings.showPageLabel == "always on") {
+        $("#chapter-label").removeClass("hide-chapter-label");
+    }
+
     stopTimer();
+
     if (!keepCurrent) {
         currentPage++;
         currentBookStats.wpm.correctChars += getCorrectChars();
@@ -450,7 +468,6 @@ export function nextWordSet(keepCurrent = false) {
             fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
         }
     }
-
 
     if (Object.keys(pageLengths).includes(currentPage.toString())) {
         if (currentBookStats.chapter != pageLengths[currentPage].chapter) {
@@ -840,7 +857,9 @@ function typeKey(e) {
 
             if (!currentBookStats.startedBook) {
                 currentBookStats.startedBook = true;
-                $("#chapter-label").addClass("hide-chapter-label");
+                if (settings.showPageLabel == "on") {
+                    $("#chapter-label").addClass("hide-chapter-label");
+                }
             }
 
             if (!timerStarted) {

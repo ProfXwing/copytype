@@ -1,8 +1,9 @@
-import { settings } from "./typing.js";
+import {
+    settings
+} from "./typing.js";
 
 let themesList = [];
 let sortedThemesList = [];
-// TODO: refactor html references to same as monkeytype so themes work
 
 
 await setThemes();
@@ -29,33 +30,32 @@ async function setThemes() {
                 </div>`
             );
         }
-    
+
         if (settings.currentTheme == theme.name) {
             $("[theme='" + theme.name + "']").find('.active-indicator').addClass('active');
         }
-    
+
         $("[theme='" + theme.name + "']").css({
             "color": theme.mainColor,
             "background": theme.bgColor
         });
-    
+
         $("[theme='" + theme.name + "']").find(".fav-button").click(() => {
             favoriteTheme(theme);
         });
-    
+
         $("[theme='" + theme.name + "']").click((e) => {
             if (e.target != $("[theme='" + theme.name + "']").find(".fav-button").get()[0]) {
-                selectTheme(theme);
+                if (e.target != $("[theme='" + theme.name + "']").find('.fa-star').get()[0]) {
+                    console.log(e.target);
+                    selectTheme(theme);
+                }
+            } else {
+                console.log(e.target);
             }
         });
     }
 }
-    
-// $.getJSON("themes/_list.json", function (themes) {
-//     for (let theme of themes) {
-
-//     }
-// });
 
 async function favoriteTheme(theme) {
     let newThemesList;
@@ -81,7 +81,7 @@ async function favoriteTheme(theme) {
                 $("[theme='" + theme.name + "']").insertBefore(child);
                 return;
             }
-        } 
+        }
     }
     $("[theme='" + theme.name + "']").appendTo($(newThemesList));
 
@@ -101,8 +101,8 @@ export async function getSortedThemesList() {
         if (themesList.length === 0) {
             await getThemesList();
         }
-            let sorted = [...themesList];
-            sorted = sorted.sort((a, b) => {
+        let sorted = [...themesList];
+        sorted = sorted.sort((a, b) => {
             const b1 = hexToHSL(a.bgColor);
             const b2 = hexToHSL(b.bgColor);
             return b2.lgt - b1.lgt;
@@ -118,15 +118,15 @@ export async function getThemesList() {
     if (themesList.length == 0) {
         return $.getJSON("themes/_list.json", function (data) {
             const list = data.sort(function (a, b) {
-            const nameA = a.name.toLowerCase();
-            const nameB = b.name.toLowerCase();
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
+                const nameA = a.name.toLowerCase();
+                const nameB = b.name.toLowerCase();
+                if (nameA < nameB) return -1;
+                if (nameA > nameB) return 1;
+                return 0;
+            });
+            themesList = list;
+            return themesList;
         });
-        themesList = list;
-        return themesList;
-      });
     } else {
         return themesList;
     }
@@ -152,17 +152,17 @@ function hexToHSL(hex) {
     let g;
     let b;
     if (hex.length == 4) {
-      r = ("0x" + hex[1] + hex[1]);
-      g = ("0x" + hex[2] + hex[2]);
-      b = ("0x" + hex[3] + hex[3]);
+        r = ("0x" + hex[1] + hex[1]);
+        g = ("0x" + hex[2] + hex[2]);
+        b = ("0x" + hex[3] + hex[3]);
     } else if (hex.length == 7) {
-      r = ("0x" + hex[1] + hex[2]);
-      g = ("0x" + hex[3] + hex[4]);
-      b = ("0x" + hex[5] + hex[6]);
+        r = ("0x" + hex[1] + hex[2]);
+        g = ("0x" + hex[3] + hex[4]);
+        b = ("0x" + hex[5] + hex[6]);
     } else {
-      r = 0x00;
-      g = 0x00;
-      b = 0x00;
+        r = 0x00;
+        g = 0x00;
+        b = 0x00;
     }
     // Then to HSL
     r /= 255;
@@ -174,25 +174,25 @@ function hexToHSL(hex) {
     let h = 0;
     let s = 0;
     let l = 0;
-  
+
     if (delta == 0) h = 0;
     else if (cmax == r) h = ((g - b) / delta) % 6;
     else if (cmax == g) h = (b - r) / delta + 2;
     else h = (r - g) / delta + 4;
-  
+
     h = Math.round(h * 60);
-  
+
     if (h < 0) h += 360;
-  
+
     l = (cmax + cmin) / 2;
     s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
     s = +(s * 100).toFixed(1);
     l = +(l * 100).toFixed(1);
-  
+
     return {
-      hue: h,
-      sat: s,
-      lgt: l,
-      string: "hsl(" + h + "," + s + "%," + l + "%)",
+        hue: h,
+        sat: s,
+        lgt: l,
+        string: "hsl(" + h + "," + s + "%," + l + "%)",
     };
 }

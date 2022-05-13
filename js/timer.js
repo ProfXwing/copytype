@@ -19,10 +19,25 @@ export function updateStats() {
         let wpm = 0;
         if (timerStarted) {
             let timeTyping = (Date.now() - startTime + currentBookStats.wpm.timeTyping) / 1000 / 60;
-            wpm = Math.round(correctChars / 5 / timeTyping);
+
+            if (!settings.alwaysShowCpm) {
+                wpm = Math.round(correctChars / 5 / timeTyping);
+            } else {
+                wpm = Math.round(correctChars / timeTyping);
+            }
 
         } else if (currentBookStats.wpm.timeTyping != 0) {
-            wpm = Math.round(correctChars / 5 / (currentBookStats.wpm.timeTyping / 1000 / 60));
+            if (!settings.alwaysShowCpm) {
+                wpm = Math.round(correctChars / 5 / (currentBookStats.wpm.timeTyping / 1000 / 60));
+            } else {
+                wpm = Math.round(correctChars / (currentBookStats.wpm.timeTyping / 1000 / 60));
+            }
+        }
+
+        if (!settings.alwaysShowCpm) {
+            wpm = `${wpm}WPM`;
+        } else {
+            wpm = `${wpm}CPM`;
         }
 
         let accuracy;
@@ -33,7 +48,7 @@ export function updateStats() {
             accuracy = 100;
         }
 
-        $("#wpm-counter").text(`${wpm}WPM`);
+        $("#wpm-counter").text(`${wpm}`);
         $("#acc-counter").text(`${accuracy}%`)
     }
 }
