@@ -31,7 +31,6 @@
   "dependencies": {
     "electron-disable-file-drop": "^1.0.2",
     "electron-squirrel-startup": "^1.0.0",
-    "jsdom": "^19.0.0",
     "node-html-parser": "^3.3.4",
     "node-stream-zip": "^1.13.4",
     "puppeteer": "^9.1.1"
