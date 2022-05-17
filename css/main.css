@@ -158,7 +158,7 @@ body {
 }
 
 .error {
-    border-bottom: 3px solid var(--error-color);
+    border-bottom: 3px solid var(--error-color) !important;
     text-shadow: 2px 0 0 var(--bg-color), -2px 0 0 var(--bg-color), 0 2px 0 var(--bg-color), 2px 2px 0 var(--bg-color), -2px 2px 0 var(--bg-color);
 }
 
@@ -387,7 +387,7 @@ body {
 }
 
 #dim-content {
-    position: absolute;
+    position: fixed;
     z-index: 1;
     width: 100%;
     height: 100%;
@@ -397,7 +397,7 @@ body {
 }
 
 .dialog {
-    position: absolute;
+    position: fixed;
     z-index: 3;
     left: 50%;
     top: 50%;
@@ -583,12 +583,13 @@ body {
     width: -moz-max-content;
 }
 
-.section-group-title {
+.sectionGroupTitle {
     color: var(--sub-color);
     cursor: pointer;
-    font-size: 3rem;
-    line-height: 2rem;
-    transition: .25s;
+}
+
+.sectionGroupTitle:hover {
+    color: var(--text-color);
 }
 
 .close-section {
@@ -851,15 +852,79 @@ body {
     border-radius: 15px;
     color: var(--bg-color);
     display: table;
-    left: 50%;
-    padding: 1.5REM;
+    right: 0;
+    padding: 1.5rem;
     pointer-events: none;
     position: absolute;
-    transform: translateX(-50%);
     transition: .25s;
     z-index: 999;
+    top: 0;
+    margin-right: 20px;
+    margin-top: 20px;
  }
 
  .showPageLabel .button {
     white-space: nowrap;
  }
+
+ input {
+    background: var(--sub-alt-color);
+    border: none;
+    border-radius: var(--roundness);
+    caret-color: var(--main-color);
+    color: var(--text-color);
+    font-family: var(--font);
+    font-size: 2rem;
+    outline: none;
+    padding: .5rem;
+ }
+
+ .settingsImport {
+    width: 40%;
+    padding: 40px 20px;
+ }
+
+ .settingsImport input {
+     margin-bottom: 20px;
+ }
+
+ .settingsImport .button {
+    width: 414.5px;
+    margin: auto;
+ }
+
+ #resetSettingsDialog h1 {
+     margin: 0;
+ }
+
+ #resetSettingsDialog table {
+     width: 100%;
+ }
+
+ .pageSettings .section .button.danger {
+    box-shadow: 0 0 0 4px var(--error-color);
+    color: var(--text-color);
+ }
+
+ .settingsGroup {
+    display: grid;
+    gap: 2rem;
+ }
+
+ /* animation for rotating -90 deg */
+@keyframes rotate-90 {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-90deg);
+    }
+}
+
+.sectionGroupTitle.clicked {
+    animation: rotate-90 .25s;
+}
+
+#restart-book-dialog h1 {
+    margin: 0;
+}

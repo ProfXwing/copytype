@@ -1,10 +1,7 @@
 const library = require('./js/library');
-const path = require("path");
 const {
     contextBridge,
-    session,
-    ipcRenderer,
-    app
+    ipcRenderer
 } = require('electron')
 const crypto = require('crypto');
 const fs = require('fs');
@@ -18,6 +15,7 @@ contextBridge.exposeInMainWorld('electron', {
     getDataFromJSON: library.getDataFromJSON,
     getSettings: library.getSettings,
     saveSettings: library.saveSettings,
+    defaultSettings: library.defaultSettings,
     createBook: () => {
         ipcRenderer.send('create-book')
     },
@@ -37,12 +35,13 @@ contextBridge.exposeInMainWorld('electron', {
     saveBookStats: library.saveBookStats,
     getBookStats: library.getBookStats,
     getBookData: library.getBookData,
+    restartBook: library.restartBook,
     handleSaveTyping: (callback) => {
-        ipcRenderer.on('save-typing', async event => {
+        ipcRenderer.on('save-typing', async () => {
             await callback()
         })
 
-        ipcRenderer.on('save-and-close', async event => {
+        ipcRenderer.on('save-and-close', async () => {
             await callback();
             ipcRenderer.send('quit-app');
         })
@@ -55,12 +54,12 @@ contextBridge.exposeInMainWorld('electron', {
         })
     },
     handleBookExists: (callback) => {
-        ipcRenderer.on('book-exists', (event) => {
+        ipcRenderer.on('book-exists', () => {
             callback();
         })
     },
     handleDRM: (callback) => {
-        ipcRenderer.on('drm-error', (event) => {
+        ipcRenderer.on('drm-error', () => {
             callback();
         })
     },

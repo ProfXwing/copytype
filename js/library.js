@@ -7,7 +7,6 @@ const puppeteer = require("puppeteer");
 const fs = require('fs');
 const {
     dialog,
-    ipcMain,
     ipcRenderer
 } = require('electron');
 const {
@@ -136,7 +135,6 @@ async function createBook(event) {
                 let chapDoc = parse(chapHTMLString);
                 let chapText = chapDoc.querySelector("body").innerText;
                 
-                // TODO: optionally do this when text is shown
                 chapText = readyText(chapText);
 
                 if (chapText != "") {
@@ -251,7 +249,6 @@ async function createBook(event) {
         
         let textDoc = parse(html);
 
-        // todo: split into pages
         let chapCount = 0;
         let epubText = [];
         let chapText = "";
@@ -351,6 +348,22 @@ async function createBook(event) {
     return path.parse(epubDir);
 }
 
+function restartBook(book) {
+    let bookStats = getBookStats(book);
+    let defaultStats = new BookStats();
+    bookStats.saved.wpm.timeTyping += bookStats.wpm.timeTyping;
+    bookStats.saved.wpm.correctChars += bookStats.wpm.correctChars;
+    bookStats.saved.accuracy.typedChars += bookStats.accuracy.typedChars;
+    bookStats.saved.accuracy.correctChars += bookStats.accuracy.correctChars;
+    bookStats.wpm = defaultStats.wpm;
+    bookStats.accuracy = defaultStats.accuracy;
+    bookStats.chapter = 0;
+    bookStats.typedPos = 0;
+    bookStats.startedBook = false;
+    bookStats.finishedBook = false;
+    saveBookStats(bookStats);
+}
+
 // Sometimes doesn't return element from querySelector idk why
 function thoroughQuery(document, id) {
     let item = document.querySelector("#" + id);
@@ -433,12 +446,6 @@ async function saveBookStats(stats) {
         fs.writeFileSync(`./library/${stats.bookName}/typing-stats.json`, bookStatsJSON);
 }
 
-function sleep(ms) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  }
-
 function getSettings() {
     return JSON.parse(fs.readFileSync("./settings.json"));
 }
@@ -451,6 +458,7 @@ function saveSettings(settings) {
 function defaultSettings() {
     let settings = new Settings();
     saveSettings(settings);
+    return settings;
 }
 
 // Gets all books previously added and adds them to library
@@ -464,13 +472,13 @@ async function loadLibrary() {
 
 // Add book to library from path
 function addLibraryBook(bookDir) {
-    coverImagePath = `library/${bookDir.name}/cover.png`
-    jsonPath = `library/${bookDir.name}/meta-data.json`;
+    let coverImagePath = `library/${bookDir.name}/cover.png`
+    let jsonPath = `library/${bookDir.name}/meta-data.json`;
     if (fs.existsSync(coverImagePath) && fs.existsSync(jsonPath)) {
-        data = JSON.parse(fs.readFileSync(jsonPath));
+        let data = JSON.parse(fs.readFileSync(jsonPath));
 
-        libraryElem = document.getElementById("library");
-        newBook = document.createElement("div");
+        let libraryElem = document.getElementById("library");
+        let newBook = document.createElement("div");
         newBook.classList.add("book-choice");
         newBook.setAttribute("id", bookDir.name);
         newBook.innerHTML = `<div class="cover-img-wrapper">
@@ -504,7 +512,7 @@ function addLibraryBook(bookDir) {
 }
 
 function removeLibraryBook(bookName) {
-    bookDiv = document.getElementById(bookName);
+    let bookDiv = document.getElementById(bookName);
     bookDiv.parentNode.removeChild(bookDiv);
 }
 
@@ -526,3 +534,4 @@ exports.saveBookStats = saveBookStats;
 exports.deleteBook = deleteBook;
 exports.removeLibraryBook = removeLibraryBook;
 exports.defaultSettings = defaultSettings;
+exports.restartBook = restartBook;

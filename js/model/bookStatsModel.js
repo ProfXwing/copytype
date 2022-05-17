@@ -4,6 +4,7 @@ class BookStats {
         this.chapter = 0;
         this.typedPos = 0; // pos in chapter
         this.startedBook = false; // if you've started the book yet
+        this.finishedBook = false;
         this.sessions = 0; // how many times you've started the book
 
         // excludes backspace
@@ -18,6 +19,16 @@ class BookStats {
             correctChars: 0
         }
         
+        this.saved = {
+            wpm: {
+                timeTyping: 0,
+                correctChars: 0
+            },
+            accuracy: {
+                typedChars: 0,
+                correctChars: 0
+            }
+        }
     }
 }
 

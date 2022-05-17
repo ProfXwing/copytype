@@ -21,7 +21,7 @@ export function loadStats(bookId) {
 }
 
 function loadTimeTyping() {
-    let duration = bookStats.wpm.timeTyping;
+    let duration = bookStats.wpm.timeTyping + bookStats.saved.wpm.timeTyping;
 
     var seconds = Math.floor((duration / 1000) % 60),
         minutes = Math.floor((duration / (1000 * 60)) % 60),
@@ -56,17 +56,24 @@ function loadWpmAcc() {
         $("#stats").find("#raw-wpm").parent().find('.title').text("raw cpm");
     }
 
-    if (bookStats.wpm.timeTyping != 0) {
+
+    let timeTyping = bookStats.wpm.timeTyping + bookStats.saved.wpm.timeTyping;
+    let wpmCorrectChars = bookStats.wpm.correctChars + bookStats.saved.wpm.correctChars;
+    let accuracyCorrectChars = bookStats.accuracy.correctChars + bookStats.saved.accuracy.correctChars;
+    let accuracyTypedChars = bookStats.accuracy.typedChars + bookStats.saved.accuracy.typedChars;
+
+    if (timeTyping > 0) {
         if (!settings.alwaysShowCpm) {
-            wpm = Math.round(bookStats.wpm.correctChars / 5 / (bookStats.wpm.timeTyping / 1000 / 60));
-            rawWpm = Math.round(bookStats.accuracy.typedChars / 5 / (bookStats.wpm.timeTyping / 1000 / 60));
+            wpm = Math.round(wpmCorrectChars / 5 / (timeTyping / 1000 / 60));
+            rawWpm = Math.round(accuracyTypedChars / 5 / (timeTyping / 1000 / 60));
         } else {
-            wpm = Math.round(bookStats.wpm.correctChars / (bookStats.wpm.timeTyping / 1000 / 60));
-            rawWpm = Math.round(bookStats.accuracy.typedChars / (bookStats.wpm.timeTyping / 1000 / 60));
+            wpm = Math.round(wpmCorrectChars / (timeTyping / 1000 / 60));
+            rawWpm = Math.round(accuracyTypedChars / (timeTyping / 1000 / 60));
         }
     }
+
     $("#stats").find('#wpm').text(wpm);
-    $("#stats").find('#accuracy').text(`${Math.floor(bookStats.accuracy.correctChars / bookStats.accuracy.typedChars * 100) || 100}%`)
+    $("#stats").find('#accuracy').text(`${Math.floor(accuracyCorrectChars / accuracyTypedChars * 100) || 100}%`)
     $("#stats").find('#raw-wpm').text(rawWpm);
 }
 

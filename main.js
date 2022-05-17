@@ -2,11 +2,10 @@ const {
     app,
     BrowserWindow,
     ipcMain,
-    ipcRenderer
 } = require('electron');
 const path = require('path');
 const {
-    createBook, addLibraryBook, deleteBook
+    createBook, deleteBook
 } = require('./js/library');
 
 
@@ -54,7 +53,7 @@ function createWindow() {
     })
 
     // TODO: yeah i think dont do this, rethink closing and saving
-    ipcMain.on("quit-app", (event) => {
+    ipcMain.on("quit-app", () => {
         app.exit(0);
     })
 

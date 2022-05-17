@@ -4,8 +4,11 @@ import {
     deleteBook,
     hideDialog,
     confirmDelete,
-    showDialog
+    showDialog,
+    tryHideDialog,
+    confirmRestart
 } from './dialogs.js';
+import { loadStats } from './stats.js';
 import {
     initTyping,
     switchContent,
@@ -13,6 +16,8 @@ import {
     saveTyping,
     nextButton,
     prevButton,
+    currentBookStats,
+    stopTyping,
 } from './typing.js';
 
 $("#app-header").click(continueTyping);
@@ -27,6 +32,10 @@ $("#settings-header").parents('.text-button').first().click(() => {
     switchContent('#settings')
 });
 
+$(".cancel-dialog").click(() => {
+    hideDialog()
+});
+
 $("#new-book").click(() => {
     window.electron.createBook()
 });
@@ -38,6 +47,13 @@ $('#book-finished').find("#go-library").click(() => {
     switchContent("#library");
     hideDialog();
 });
+
+$("#book-finished").find("#book-info").click(() => {
+    stopTyping();
+    loadStats(currentBookStats.bookName);
+    hideDialog();
+})
+
 
 $("#page-prev").click(function () {
     prevButton();
@@ -62,11 +78,21 @@ $("#drm-error").find("#choose-book").click(() => {
     window.electron.createBook()
 });
 
-$("#book-exists").find("#cancel-dialog").click(() => {hideDialog()});
-$("#drm-error").find("#cancel-dialog").click(() => {hideDialog()});
+
+$("#dim-content").click(() => {
+    tryHideDialog()
+});
+$("#restart-book-dialog").find("#restart-book").click(() => {
+    confirmRestart();
+});
+
 
 window.electron.handleInitTyping(initTyping);
 window.electron.handleSaveTyping(saveTyping);
 window.electron.handleDeleteBook(deleteBook);
-window.electron.handleBookExists(() => {showDialog("book-exists")});
-window.electron.handleDRM(() => {showDialog("drm-error")});
+window.electron.handleBookExists(() => {
+    showDialog("book-exists")
+});
+window.electron.handleDRM(() => {
+    showDialog("drm-error")
+});

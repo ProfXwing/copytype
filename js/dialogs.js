@@ -1,9 +1,11 @@
 import {
     currentBookStats,
-    stopTyping
+    initTyping,
+    stopTyping,
 } from "./typing.js";
 
 var bookToDelete;
+var bookToRestart;
 
 // limitation of one dialog at a time, can change if needed.
 var currentDialog;
@@ -26,6 +28,17 @@ export function deleteBook(bookId, bookTitle) {
     showDialog('delete-warning');
 }
 
+export function tryRestartBook(book) {
+    bookToRestart = book;
+    showDialog("restart-book-dialog")
+}
+
+export function confirmRestart() {
+    window.electron.restartBook(bookToRestart);
+    hideDialog();
+    initTyping(bookToRestart);
+}
+
 export function confirmDelete() {
     if (currentBookStats) {
         if (currentBookStats.bookName == bookToDelete) {
@@ -33,5 +46,12 @@ export function confirmDelete() {
         }
     }
     window.electron.deleteBook(bookToDelete);
+    hideDialog();
+}
+
+export function tryHideDialog() {
+    if (currentDialog == "book-finished") {
+        return;
+    }
     hideDialog();
 }

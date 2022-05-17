@@ -1,8 +1,6 @@
 // thanks woshifyz, https://github.com/woshifyz/mobi_reader
 // this is a real lifesaver. super easy to use too
 
-const fs = require('fs');
-
 function ab2str(buf) {
 	if (buf instanceof ArrayBuffer) {
 		buf = new Uint8Array(buf);

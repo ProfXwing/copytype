@@ -171,7 +171,7 @@
                     <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
                 </td>
                 <td>
-                    <div id="cancel-dialog" class="dialog-button book-exists-button">Cancel</div>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
                 </td>
             </table>
         </div>
@@ -186,12 +186,41 @@
                     <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
                 </td>
                 <td>
-                    <div id="cancel-dialog" class="dialog-button book-exists-button">Cancel</div>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
                 </td>
             </table>
         </div>
 
-        <!-- TODO: restart book dialog -->
+        <div id="settingsImport" class="settingsImport hidden dialog">
+            <input>
+            <div class="button">import settings</div>
+        </div>
+
+        <div id="resetSettingsDialog" class="hidden dialog">
+            <h1>Reset Settings</h1>
+            <p>Are you sure you want to reset all your settings?</p>
+            <table id="reset-settings-buttons">
+                <td>
+                    <div id="reset-settings" class="dialog-button reset-settings-button">Reset</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button reset-settings-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="restart-book-dialog" class="hidden dialog">
+            <h1>You finished this book!</h1>
+            <p id="book-name"></p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="restart-book" class="dialog-button book-exists-button">Restart</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
 
         <!-- TODO: Cover dialog -->
 
@@ -264,200 +293,178 @@
         <!-- Settings -->
         <div id="settings" class="pageSettings hidden">
             <div class="links">
-                <a class="text-button" href="#group-behavior">behavior</a>
-                <a class="text-button" href="#group-input">input</a>
-                <a class="text-button" href="#group-caret">caret</a>
-                <a class="text-button" href="#group-appearance">appearance</a>
-                <a class="text-button" href="#group-theme">theme</a>
-                <a class="text-button" href="#group-hide-elements">hide elements</a>
-                <a class="text-button" href="#group-danger-zone">danger zone</a>
+                <a class="text-button" href="#group_input">input</a>
+                <a class="text-button" href="#group_caret">caret</a>
+                <a class="text-button" href="#group_appearance">appearance</a>
+                <a class="text-button" href="#group_theme">theme</a>
+                <a class="text-button" href="#group_hideElements">hide elements</a>
+                <a class="text-button" href="#group_book">book</a>
+                <a class="text-button" href="#group_dangerZone">danger zone</a>
             </div>
 
-            <!-- <div id="group_behavior" class="sectionGroupTitle" group="behavior">behavior <i
-                    class="fas fa-chevron-down"></i></div>
-            <div class="settingsGroup behavior"> -->
-            <div class="section blindMode">
-                <h1>blind mode</h1>
-                <div class="text">No errors or incorrect words are highlighted. Helps you to focus on raw speed.</div>
-                <div class="buttons">
-                    <div class="button" blindMode="false" tabindex="0">off</div>
-                    <div class="button" blindMode="true" tabindex="0">⠀</div>
+            <div id="group_input" class="sectionGroupTitle" group="input">input <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="settingsGroup input">
+                <div class="section blindMode">
+                    <h1>blind mode</h1>
+                    <div class="text">No errors or incorrect words are highlighted. Helps you to focus on raw speed.
+                    </div>
+                    <div class="buttons">
+                        <div class="button" blindMode="false" tabindex="0">off</div>
+                        <div class="button" blindMode="true" tabindex="0">⠀</div>
+                    </div>
+                </div>
+
+                <div class="section strictSpace">
+                    <h1>strict space</h1>
+                    <div class="text">Pressing space at the beginning of a word will insert a space character when this
+                        mode
+                        is enabled.</div>
+                    <div class="buttons">
+                        <div class="button" strictSpace="false" tabindex="0">off</div>
+                        <div class="button" strictSpace="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section stopOnError">
+                    <h1>stop on error</h1>
+                    <div class="text">Letter mode will stop input when pressing any incorrect letters. Word mode will
+                        not
+                        allow you to continue to the next word until you correct all mistakes.</div>
+                    <div class="buttons">
+                        <div class="button" stopOnError="off" tabindex="0">off</div>
+                        <div class="button" stopOnError="word" tabindex="0">word</div>
+                        <div class="button" stopOnError="letter" tabindex="0">letter</div>
+                    </div>
+                </div>
+
+                <div class="section confidenceMode">
+                    <h1>confidence mode</h1>
+                    <div class="text">When enabled, you will not be able to go back to previous words to fix mistakes.
+                        When
+                        turned up to the max, you won't be able to backspace at all.</div>
+                    <div class="buttons">
+                        <div class="button" confidenceMode="off" tabindex="0">off</div>
+                        <div class="button" confidenceMode="on" tabindex="0">on</div>
+                        <div class="button" confidenceMode="max" tabindex="0">max</div>
+                    </div>
+                </div>
+
+                <div class="section indicateTypos">
+                    <h1>indicate typos</h1>
+                    <div class="text">Shows typos that you've made. Below shows what you typed below the letters and
+                        replace
+                        will replace the letters with the ones you typed.</div>
+                    <div class="buttons">
+                        <div class="button" indicateTypos="off" tabindex="0">off</div>
+                        <div class="button" indicateTypos="below" tabindex="0">below</div>
+                        <div class="button" indicateTypos="replace" tabindex="0">replace</div>
+                    </div>
+                </div>
+
+                <div class="section hideExtraLetters">
+                    <h1>hide extra letters</h1>
+                    <div class="text">Hides extra letters. This will completely avoid words jumping lines (due to
+                        changing
+                        width), but might feel a bit confusing when you press a key and nothing happens.</div>
+                    <div class="buttons">
+                        <div class="button" hideExtraLetters="false" tabindex="0">off</div>
+                        <div class="button" hideExtraLetters="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section lazyMode">
+                    <h1>lazy mode</h1>
+                    <div class="text">Replaces accented letters with their normal equivalents.</div>
+                    <div class="buttons">
+                        <div class="button" lazyMode="false" tabindex="0">off</div>
+                        <div class="button" lazyMode="true" tabindex="0">on</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="section strictSpace">
-                <h1>strict space</h1>
-                <div class="text">Pressing space at the beginning of a word will insert a space character when this mode
-                    is enabled.</div>
-                <div class="buttons">
-                    <div class="button" strictSpace="false" tabindex="0">off</div>
-                    <div class="button" strictSpace="true" tabindex="0">on</div>
+            <div id="group_caret" class="sectionGroupTitle" group="caret">caret <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="settingsGroup caret">
+                <div class="section smoothCaret">
+                    <h1>smooth caret</h1>
+                    <div class="text">The caret will move smoothly between letters and words.</div>
+                    <div class="buttons">
+                        <div class="button" smoothCaret="false" tabindex="0">off</div>
+                        <div class="button" smoothCaret="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section caretStyle">
+                    <h1>caret style</h1>
+                    <div class="text">Change the style of the caret during the test.</div>
+                    <div class="buttons">
+                        <div class="button" caretStyle="off" tabindex="0">off</div>
+                        <div class="button" caretStyle="default" tabindex="0">|</div>
+                        <div class="button" caretStyle="block" tabindex="0">▮</div>
+                        <div class="button" caretStyle="outline" tabindex="0">▯</div>
+                        <div class="button" caretStyle="underline" tabindex="0">_</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="section stopOnError">
-                <h1>stop on error</h1>
-                <div class="text">Letter mode will stop input when pressing any incorrect letters. Word mode will not
-                    allow you to continue to the next word until you correct all mistakes.</div>
-                <div class="buttons">
-                    <div class="button" stopOnError="off" tabindex="0">off</div>
-                    <div class="button" stopOnError="word" tabindex="0">word</div>
-                    <div class="button" stopOnError="letter" tabindex="0">letter</div>
-                </div>
+            <div id="group_appearance" class="sectionGroupTitle" group="appearance">appearance <i
+                    class="fas fa-chevron-down"></i>
             </div>
-
-            <div class="section confidenceMode">
-                <h1>confidence mode</h1>
-                <div class="text">When enabled, you will not be able to go back to previous words to fix mistakes. When
-                    turned up to the max, you won't be able to backspace at all.</div>
-                <div class="buttons">
-                    <div class="button" confidenceMode="off" tabindex="0">off</div>
-                    <div class="button" confidenceMode="on" tabindex="0">on</div>
-                    <div class="button" confidenceMode="max" tabindex="0">max</div>
+            <div class="settingsGroup appearance">
+                <div class="section highlightMode">
+                    <h1>highlight mode</h1>
+                    <div class="text">Change what is highlighted during the test.</div>
+                    <div class="buttons">
+                        <div class="button" highlightMode="off" tabindex="0">off</div>
+                        <div class="button" highlightMode="letter" tabindex="0">letter</div>
+                        <div class="button" highlightMode="word" tabindex="0">word</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="section indicateTypos">
-                <h1>indicate typos</h1>
-                <div class="text">Shows typos that you've made. Below shows what you typed below the letters and replace
-                    will replace the letters with the ones you typed.</div>
-                <div class="buttons">
-                    <div class="button" indicateTypos="off" tabindex="0">off</div>
-                    <div class="button" indicateTypos="below" tabindex="0">below</div>
-                    <div class="button" indicateTypos="replace" tabindex="0">replace</div>
-                </div>
-            </div>
-
-            <div class="section hideExtraLetters">
-                <h1>hide extra letters</h1>
-                <div class="text">Hides extra letters. This will completely avoid words jumping lines (due to changing
-                    width), but might feel a bit confusing when you press a key and nothing happens.</div>
-                <div class="buttons">
-                    <div class="button" hideExtraLetters="false" tabindex="0">off</div>
-                    <div class="button" hideExtraLetters="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section lazyMode">
-                <h1>lazy mode</h1>
-                <div class="text">Replaces accented letters with their normal equivalents.</div>
-                <div class="buttons">
-                    <div class="button" lazyMode="false" tabindex="0">off</div>
-                    <div class="button" lazyMode="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section smoothCaret">
-                <h1>smooth caret</h1>
-                <div class="text">The caret will move smoothly between letters and words.</div>
-                <div class="buttons">
-                    <div class="button" smoothCaret="false" tabindex="0">off</div>
-                    <div class="button" smoothCaret="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section caretStyle">
-                <h1>caret style</h1>
-                <div class="text">Change the style of the caret during the test.</div>
-                <div class="buttons">
-                    <div class="button" caretStyle="off" tabindex="0">off</div>
-                    <div class="button" caretStyle="default" tabindex="0">|</div>
-                    <div class="button" caretStyle="block" tabindex="0">▮</div>
-                    <div class="button" caretStyle="outline" tabindex="0">▯</div>
-                    <div class="button" caretStyle="underline" tabindex="0">_</div>
-                </div>
-            </div>
-
-            <div class="section highlightMode">
-                <h1>highlight mode</h1>
-                <div class="text">Change what is highlighted during the test.</div>
-                <div class="buttons">
-                    <div class="button" highlightMode="off" tabindex="0">off</div>
-                    <div class="button" highlightMode="letter" tabindex="0">letter</div>
-                    <div class="button" highlightMode="word" tabindex="0">word</div>
-                </div>
-            </div>
-
-            <div class="section alwaysShowCpm">
-                <h1>always show cpm</h1>
-                <div class="text">Always shows characters per minute calculation instead of the default words per minute
-                    calculation.</div>
-                <div class="buttons">
-                    <div class="button" alwaysShowCpm="false" tabindex="0">off</div>
-                    <div class="button" alwaysShowCpm="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section flipTestColors">
-                <h1>flip test colors</h1>
-                <div class="text">
-                    By default, typed text is brighter than the future text. When enabled, the colors will be flipped
-                    and the future text will be brighter than the already typed text.</div>
-                <div class="buttons">
-                    <div class="button" flipTestColors="false" tabindex="0">off</div>
-                    <div class="button" flipTestColors="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section colorfulMode">
-                <h1>colorful mode</h1>
-                <div class="text">
-                    When enabled, the test words will use the main color, instead of the text color, making the website
-                    more colorful.</div>
-                <div class="buttons">
-                    <div class="button" colorfulMode="false" tabindex="0">off</div>
-                    <div class="button" colorfulMode="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section showLiveWpm">
-                <h1>live wpm</h1>
-                <div class="text">
-                    Displays a live WPM speed during the test. Updates twice every second.</div>
-                <div class="buttons">
-                    <div class="button" showLiveWpm="false" tabindex="0">off</div>
-                    <div class="button" showLiveWpm="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section showLiveAcc">
-                <h1>live accuracy</h1>
-                <div class="text">
-                    Displays a live WPM speed during the test. Updates twice every second.</div>
-                <div class="buttons">
-                    <div class="button" showLiveAcc="false" tabindex="0">off</div>
-                    <div class="button" showLiveAcc="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section capsLockWarning">
-                <h1>caps lock warning</h1>
-                <div class="text">
-                    Displays a warning when caps lock is on.
-                </div>
-                <div class="buttons">
-                    <div class="button" capsLockWarning="false" tabindex="0">off</div>
-                    <div class="button" capsLockWarning="true" tabindex="0">on</div>
-                </div>
-            </div>
-
-            <div class="section showPageLabel">
-                <h1>page/chapter label</h1>
-                <div class="text">Displays what page/chapter you're on above the selector. (Note: this number might be wrong.)</div>
-                <div class="buttons">
-                    <div class="button" showPageLabel="off" tabindex="0">off</div>
-                    <div class="button" showPageLabel="on" tabindex="0">on</div>
-                    <div class="button" showPageLabel="always on" tabindex="0">always on</div>
+                <div class="section alwaysShowCpm">
+                    <h1>always show cpm</h1>
+                    <div class="text">Always shows characters per minute calculation instead of the default words per
+                        minute
+                        calculation.</div>
+                    <div class="buttons">
+                        <div class="button" alwaysShowCpm="false" tabindex="0">off</div>
+                        <div class="button" alwaysShowCpm="true" tabindex="0">on</div>
+                    </div>
                 </div>
             </div>
 
 
 
-            <!-- <div id="group-theme" class="section-group-title">
-                theme
-                <i class="fas fa-chevron-down close-section"></i>
-            </div>
 
+            <div id="group_theme" class="sectionGroupTitle" group="theme">theme <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="settingsGroup theme">
+                <div class="section flipTestColors">
+                    <h1>flip test colors</h1>
+                    <div class="text">
+                        By default, typed text is brighter than the future text. When enabled, the colors will be
+                        flipped
+                        and the future text will be brighter than the already typed text.</div>
+                    <div class="buttons">
+                        <div class="button" flipTestColors="false" tabindex="0">off</div>
+                        <div class="button" flipTestColors="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section colorfulMode">
+                    <h1>colorful mode</h1>
+                    <div class="text">
+                        When enabled, the test words will use the main color, instead of the text color, making the
+                        website
+                        more colorful.</div>
+                    <div class="buttons">
+                        <div class="button" colorfulMode="false" tabindex="0">off</div>
+                        <div class="button" colorfulMode="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <!--
              <div class="section themes">
                 <h1>theme</h1>
                 <div class="tabs">
@@ -465,16 +472,135 @@
                     <div class="button" tab="custom">custom</div>
                 </div>
             </div> -->
-            <div class="themes-tab">
-                <div class="fav-themes buttons"></div>
-                <div class="all-themes buttons"></div>
+                <div class="themes-tab">
+                    <div class="fav-themes buttons"></div>
+                    <div class="all-themes buttons"></div>
+                </div>
             </div>
-        </div>
 
 
 
-       
-        <!-- 
+
+            <div id="group_hideElements" class="sectionGroupTitle" group="hideElements">hide elements <i
+                    class="fas fa-chevron-down"></i>
+            </div>
+            <div class="settingsGroup hideElements">
+                <div class="section showLiveWpm">
+                    <h1>live wpm</h1>
+                    <div class="text">
+                        Displays a live WPM speed during the test. Updates twice every second.</div>
+                    <div class="buttons">
+                        <div class="button" showLiveWpm="false" tabindex="0">off</div>
+                        <div class="button" showLiveWpm="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section showLiveAcc">
+                    <h1>live accuracy</h1>
+                    <div class="text">
+                        Displays a live WPM speed during the test. Updates twice every second.</div>
+                    <div class="buttons">
+                        <div class="button" showLiveAcc="false" tabindex="0">off</div>
+                        <div class="button" showLiveAcc="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section capsLockWarning">
+                    <h1>caps lock warning</h1>
+                    <div class="text">
+                        Displays a warning when caps lock is on.
+                    </div>
+                    <div class="buttons">
+                        <div class="button" capsLockWarning="false" tabindex="0">off</div>
+                        <div class="button" capsLockWarning="true" tabindex="0">on</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="group_book" class="sectionGroupTitle" group="book">book <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="settingsGroup book">
+                <div class="section showPageLabel">
+                    <h1>page/chapter label</h1>
+                    <div class="text">Displays what page/chapter you're on above the selector. (Note: this number
+                        might
+                        be
+                        wrong.)</div>
+                    <div class="buttons">
+                        <div class="button" showPageLabel="off" tabindex="0">off</div>
+                        <div class="button" showPageLabel="on" tabindex="0">on</div>
+                        <div class="button" showPageLabel="always on" tabindex="0">always on</div>
+                    </div>
+                </div>
+
+                <div class="section removeFromText">
+                    <h1>remove from text</h1>
+                    <div class="text">Type characters you would like to remove.</div>
+                    <br>
+                    <input>
+                </div>
+
+                <div class="section removePunctuation">
+                    <h1>remove punctuation</h1>
+                    <div class="text">Remove all punctuation from text.</div>
+                    <div class="buttons">
+                        <div class="button" redoText="true" removePunctuation="false" tabindex="0">off</div>
+                        <div class="button" redoText="true" removePunctuation="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section removeCaps">
+                    <h1>remove caps</h1>
+                    <div class="text">Replace all capital letters with lowercase.</div>
+                    <div class="buttons">
+                        <div class="button" redoText="true" removeCaps="false" tabindex="0">off</div>
+                        <div class="button" redoText="true" removeCaps="true" tabindex="0">on</div>
+                    </div>
+                </div>
+
+                <div class="section removeNewLine">
+                    <h1>remove new line</h1>
+                    <div class="text">Remove all new lines from text.</div>
+                    <div class="buttons">
+                        <div class="button" redoText="true" removeNewLine="false" tabindex="0">off</div>
+                        <div class="button" redoText="true" removeNewLine="true" tabindex="0">on</div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <div id="group_dangerZone" class="sectionGroupTitle" group="dangerZone">danger zone <i
+                    class="fas fa-chevron-down"></i>
+            </div>
+            <div class="settingsGroup dangerZone">
+                <div class="section importexportSettings">
+                    <h1>import/export settings</h1>
+                    <div class="text">Import or export the settings as JSON.</div>
+                    <div class="buttons">
+                        <div class="button import" tabindex="0">import</div>
+                        <div class="button export" tabindex="0">export</div>
+                    </div>
+                </div>
+
+                <div class="section resetSettings">
+                    <h1>reset settings</h1>
+                    <div class="text">Resets settings to the default. Warning: you can't undo this action!</div>
+                    <div class="buttons">
+                        <div class="button danger" tabindex="0">reset settings</div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+            <!-- 
                 //blind mode
                 //strict space
                 //stop on error (off, word, letter)
@@ -501,16 +627,17 @@
                 //division label (chapter, page)
 
                 ebook options----
-                Remove from text list (no quotes, new lines, etc.)
+                better remove from text
+                //Remove from text list (no quotes, new lines, etc.)
                 Text scroll options (page by page, line by line, tape mode)
-                remove punctuation
+                //remove punctuation
                 Save previous pages
 
-                export/import settings
-                reset settings
+                //export/import settings
+                //reset settings
             
             -->
-    </div>
+        </div>
 
 
 </body>

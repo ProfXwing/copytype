@@ -7,7 +7,6 @@ let sortedThemesList = [];
 
 
 await setThemes();
-loadTheme(settings.currentTheme)
 
 // load themes into settings menu
 async function setThemes() {
@@ -47,11 +46,8 @@ async function setThemes() {
         $("[theme='" + theme.name + "']").click((e) => {
             if (e.target != $("[theme='" + theme.name + "']").find(".fav-button").get()[0]) {
                 if (e.target != $("[theme='" + theme.name + "']").find('.fa-star').get()[0]) {
-                    console.log(e.target);
                     selectTheme(theme);
                 }
-            } else {
-                console.log(e.target);
             }
         });
     }
@@ -91,8 +87,6 @@ function selectTheme(theme) {
     settings.currentTheme = theme.name;
 
     window.electron.saveSettings(settings);
-    $(".themes-tab").find('.active-indicator.active').removeClass('active');
-    $("[theme='" + theme.name + "']").find('.active-indicator').addClass('active');
     loadTheme(theme.name);
 }
 
@@ -132,7 +126,10 @@ export async function getThemesList() {
     }
 }
 
-function loadTheme(theme) {
+export function loadTheme(theme) {
+    $(".themes-tab").find('.active-indicator.active').removeClass('active');
+    $("[theme='" + theme + "']").find('.active-indicator').addClass('active');
+
     const link = document.createElement("link");
     link.type = "text/css";
     link.rel = "stylesheet";

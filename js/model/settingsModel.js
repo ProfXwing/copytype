@@ -17,6 +17,10 @@ class Settings {
         this.showLiveAcc = false;
         this.capsLockWarning = true;
         this.showPageLabel = 'off';
+        this.removeFromText = [];
+        this.removePunctuation = false;
+        this.removeCaps = false;
+        this.removeNewLine = false;
 
         this.wordCount = 150;
         this.currentTheme = 'serika_dark';

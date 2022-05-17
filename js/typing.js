@@ -1,6 +1,7 @@
 // TODO: make this file smaller
+// what even are objects 🟡 
 import {
-    showDialog
+    showDialog, tryRestartBook
 } from "./dialogs.js";
 import {
     startTimer,
@@ -8,6 +9,19 @@ import {
     updateStats,
     timerStarted
 } from "./timer.js";
+
+document.addEventListener('keypress', typeKey);
+document.addEventListener('keydown', checkKey);
+
+// Caret is moved on window resize
+$(window).resize(function () {
+    if (currentBookStats) {
+        nextWordSet(true);
+    }
+    if (!$("#words").hasClass("hidden")) {
+        updateCaret();
+    }
+});
 
 class WrongSpace {}
 
@@ -110,28 +124,6 @@ export function switchContent(div) {
     $(div).removeClass("hidden");
 }
 
-// Gets current letters on screen.
-// Seems unnecessary
-// function getWordsOnScreen() {
-//     let currentTyped = "";
-
-//     for (let child of $('#words').find(".word")) {
-//         for (let letter of $(child).children()) {
-//             if (letter.innerHTML == `<i class="fas fa-angle-down"></i>`) {
-//                 currentTyped += "\n";
-//             } else {
-//                 currentTyped += letter.innerHTML;
-//             }
-
-//         }
-//         if ($(child).get()[0] != $('#words').find('.word').last().get()[0]) {
-//             currentTyped += " ";
-//         }
-//     }
-
-//     return currentTyped;
-// }
-
 function getShownWordText(index) {
     let shownWord = "";
     for (let letter of $("#words").find(".word").eq(index).children()) {
@@ -218,13 +210,14 @@ function updateCaret(init = false) {
             }, duration);
         }
 
-        
+
     }
 }
 
 // clears loaded book
 export function stopTyping() {
     stopTimer();
+
     $("#typing-stats").addClass("hidden");
     $("#wpm-counter").addClass("hidden");
     $("#acc-counter").addClass("hidden");
@@ -241,28 +234,46 @@ export function stopTyping() {
 
 // Initializes typing screen
 export function initTyping(book) {
-    settings.currentBook = book;
-    window.electron.saveSettings(settings);
-
-    // saves in case another book is loaded
-    saveTyping();
-
-    $("#page-selectors").removeClass('hidden');
-
     currentBookStats = window.electron.getBookStats(book);
-    currentBookData = window.electron.getBookData(book);
 
-    if (!currentBookStats.startedBook) $("#chapter-label").removeClass("hide-chapter-label");
-    changeDivisionText();
-
-    typed = []
-    fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]); // .slice(currentBookStats.typedPos);
-    currentBookStats.sessions++;
-
-    nextWordSet(true);
-    switchContent("#typing");
+    if (currentBookStats.finishedBook) {
+        $("#restart-book").ready(() => {
+            tryRestartBook(book);
+        })
+    } else {
+        settings.currentBook = book;
+        window.electron.saveSettings(settings);
+    
+        // saves in case another book is loaded
+        saveTyping();
+    
+        $("#page-selectors").removeClass('hidden');
+    
+        currentBookData = window.electron.getBookData(book);
+    
+        if (!currentBookStats.startedBook && settings.showPageLabel != 'off') {
+            $("#chapter-label").removeClass("hide-chapter-label");
+        }
+        changeDivisionText();
+    
+        typed = []
+        readyFullText();
+        currentBookStats.sessions++;
+    
+        nextWordSet(true);
+        switchContent("#typing");
+    }    
 }
 
+export function saveAndReload() {
+    saveTyping();
+    currentBookStats = window.electron.getBookStats(settings.currentBook);
+    currentBookData = window.electron.getBookData(settings.currentBook);
+    changeDivisionText();
+    typed = []
+    readyFullText();
+    nextWordSet(true);
+}
 
 export function continueTyping() {
     switchContent("#typing");
@@ -310,11 +321,13 @@ function changeDivisionText() {
 }
 
 export function prevButton() {
-    if (!currentBookStats.startedBook && currentBookStats.chapter != 0) {
-        currentBookStats.chapter--;
-        changeDivisionText();
-        fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
-        nextWordSet(true);
+    if (!currentBookStats.startedBook) {
+        if (currentBookStats.chapter > 0) {
+            currentBookStats.chapter--;
+            changeDivisionText();
+            readyFullText();
+            nextWordSet(true);
+        }
     } else prevWordSet();
 }
 
@@ -322,32 +335,22 @@ export function nextButton() {
     if (!currentBookStats.startedBook && currentBookStats.chapter != currentBookData.textPath.length - 1) {
         currentBookStats.chapter++;
         changeDivisionText();
-        fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
+        readyFullText();
         nextWordSet(true);
     } else nextWordSet();
 }
 
-// TODO: inconsistent page lengths going next/prev by 2. idk
-// UPDATE: almost fully implemented. needs testing, 
-// seems like it's still inconsistent at times? try resizing window
-
-/* probably how to fix: make var with {
-    pageNumber: {startPos, endPos}
-}
-
-when you switch pages, check this object first for positions. 
-when window resizes and other book is initialized, reset object
-
-*/
-
-
 function prevWordSet() {
     typed = [];
-    currentPage--;
+    if (currentPage > 0) {
+        currentPage--;
+    }
     if (currentBookStats.typedPos == 0) {
-        currentBookStats.chapter--;
+        if (currentBookStats.chapter > 0) {
+            currentBookStats.chapter--;
+        }
         showChapterLabel();
-        fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
+        readyFullText();
         currentBookStats.typedPos = fullText.length;
     }
 
@@ -355,7 +358,7 @@ function prevWordSet() {
         if (currentBookStats.chapter != pageLengths[currentPage].chapter) {
             currentBookStats.chapter = pageLengths[currentPage].chapter;
             showChapterLabel();
-            fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
+            readyFullText();
         }
 
         currentBookStats.typedPos = pageLengths[currentPage].startPos;
@@ -376,7 +379,6 @@ function prevWordSet() {
         }
         text = new_text;
     }
-
 
     hideWords();
 
@@ -414,6 +416,7 @@ function prevWordSet() {
             setPageLengths();
         }
 
+
         // windowResize();
         updateCaret(true);
         showWords();
@@ -422,6 +425,7 @@ function prevWordSet() {
 
 
 export function nextWordSet(keepCurrent = false) {
+    if (currentBookStats.finishedBook) {return;}
     if (settings.flipTestColors) {
         $("#words").addClass("flipped");
     } else {
@@ -459,13 +463,19 @@ export function nextWordSet(keepCurrent = false) {
         if (currentBookStats.chapter == currentBookData.textPath.length - 1) {
             // makes sure dialog is ready
             $("#book-finished").ready(() => {
+                currentBookStats.finishedBook = true;
+                saveTyping();
+                delete settings.currentBook;
+                window.electron.saveSettings(settings);
                 showDialog('book-finished');
+                
             })
+            return;
         } else {
             currentBookStats.chapter++;
             showChapterLabel();
             currentBookStats.typedPos = 0;
-            fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
+            readyFullText();
         }
     }
 
@@ -473,7 +483,7 @@ export function nextWordSet(keepCurrent = false) {
         if (currentBookStats.chapter != pageLengths[currentPage].chapter) {
             currentBookStats.chapter = pageLengths[currentPage].chapter;
             showChapterLabel();
-            fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
+            readyFullText();
         }
 
         currentBookStats.typedPos = pageLengths[currentPage].startPos;
@@ -492,7 +502,6 @@ export function nextWordSet(keepCurrent = false) {
         }
         text = new_text;
     }
-
 
     hideWords();
     $("#words").empty();
@@ -517,7 +526,7 @@ export function nextWordSet(keepCurrent = false) {
         let currentTyped = getTypedAsWords();
         for (let wordIndex = 0; wordIndex < currentTyped.length; wordIndex++) {
             let letterCount = currentTyped[wordIndex].length - 1;
-            
+
             for (let letterIndex = 0; letterIndex <= letterCount; letterIndex++) {
                 styleWord(wordIndex, letterIndex);
             }
@@ -527,56 +536,6 @@ export function nextWordSet(keepCurrent = false) {
             }
 
         }
-
-        // if (currentTyped[currentTyped.length - 1].length == 0) {
-        //     checkError(currentTyped.length - 2);
-        // }
-
-        // if (settings.highlightMode == 'letter') {
-        //     let words = $("#words").find(".word");
-        //     let currentTyped = getTypedAsWords();
-        //     for (let i = 0; i < currentTyped.length; i++) {
-        //         let word = $(words[i]);
-
-        //         if (i != currentTyped.length - 1 && currentTyped[i] != text[i] && !settings.blindMode) {
-        //             word.addClass("error");
-        //         }
-
-
-        //         let letters = word.find("letter");
-        //         for (let j = 0; j < letters.length; j++) {
-        //             if (j > currentTyped[i].length - 1 && !(settings.blindMode && i != currentTyped.length - 1)) {
-        //                 break;
-        //             }
-        //             if (currentTyped[i].charAt(j) != text[i].charAt(j) && !settings.blindMode) {
-        //                 $(letters[j]).addClass("incorrect");
-        //             } else {
-        //                 $(letters[j]).addClass("correct");
-        //             }
-        //         }
-
-        //         while (word.find("letter").length < currentTyped[i].length) {
-
-        //             // letter should be the next letter to add
-        //             // next letter to add should use word.find("letter").length, as that is the amount of letters currently added
-        //             let letter = currentTyped[i].charAt(word.find("letter").length)
-        //             if (letter == "\n" || letter == " ") {
-        //                 letter = "_";
-        //             }
-
-        //             word.append($(`<letter class="incorrect">${letter}</letter>`))
-        //         }
-        //     }
-        // } else if (settings.highlightMode == 'word') {
-        //     checkWholeWordErrors();
-        //     if (!settings.blindMode) {
-        //         let wordIndex = 0;
-        //         while (wordIndex <= getTypedAsWords().length - 2) {
-        //             checkError(wordIndex);
-        //             wordIndex++;
-        //         }
-        //     }
-        // }
     }
 
     $("#words").append(`<div id='caret' class='${settings.caretStyle}'></div>`);
@@ -619,7 +578,7 @@ function setPageLengths() {
 function canType(key) {
     let currentTypedWords = getTypedAsWords();
 
-    if (key == " " && currentTypedWords.length + 1> text.length) {
+    if ((key == " " || key == "Enter") && currentTypedWords.length + 1 > text.length) {
         currentBookStats.accuracy.typedChars++;
         currentBookStats.accuracy.correctChars++;
         currentBookStats.wpm.correctChars++;
@@ -676,7 +635,7 @@ function checkCorrect() {
     }
 }
 
-function styleWord(wordIndex=getTypedAsWords().length - 1, letterIndex) {
+function styleWord(wordIndex = getTypedAsWords().length - 1, letterIndex) {
     let typedWords = getTypedAsWords();
     let typedWord = typedWords[wordIndex].split("");
 
@@ -729,7 +688,7 @@ function styleWord(wordIndex=getTypedAsWords().length - 1, letterIndex) {
                 }
             }
         }
-        
+
         if (typedWord.join("") != correctWordPart && !settings.blindMode) {
             for (let letter of shownWord.find("letter")) {
                 $(letter).removeClass("correct").addClass("incorrect");
@@ -762,39 +721,9 @@ function styleWord(wordIndex=getTypedAsWords().length - 1, letterIndex) {
     }
 }
 
-// for highlightmode == "word"
-// function checkWholeWordErrors() {
-//     let typedAsWords = getTypedAsWords();
-//     let typedWord = typedAsWords[typedAsWords.length - 1];
-//     let correctWord = text[typedAsWords.length - 1]
-//     let correctWordPart = correctWord.slice(0, typedWord.length)
-//     let lastShownWord = $("#words").find("div").eq(typedAsWords.length - 1);
-
-//     for (let word of $("#words").find(".word")) {
-//         if (word != lastShownWord) {
-//             for (let letter of $(word).find('letter')) {
-//                 $(letter).removeClass("correct");
-//             }
-//         }
-//     }
-
-//     if (typedWord != correctWordPart && !settings.blindMode) {
-//         for (let letter of lastShownWord.find("letter")) {
-//             $(letter).removeClass("correct").addClass("incorrect");
-//         }
-//     } else {
-//         for (let letter of lastShownWord.find("letter")) {
-//             $(letter).removeClass("incorrect").addClass("correct");
-//         }
-//     }
-// }
-
-
-
-
 // Runs on keypress, adds key to typed list and styles screen appropriately
 function typeKey(e) {
-    if (text.length > 0) {
+    if (text.length > 0 && !$("#typing").hasClass("hidden")) {
         if (canType(e.key) && !e.ctrlKey) {
             let typedAsWords = getTypedAsWords();
             let correctWord = text[typedAsWords.length - 1]
@@ -881,7 +810,6 @@ function typeKey(e) {
                 let currentShownWord = getShownWordText(currentTypedWords.length - 1);
 
                 if (typedWord.length > correctWord.length && typedWord.length > currentShownWord.length) {
-                    console.log("overtyping?")
                     let letter = (e.key == "Enter") ? "_" : typedWord.substring(typedWord.length - 1);
                     let currentEndLetter = $("#words").find("div").eq(currentTypedWords.length - 1).children().eq(typedWord.split("").length - 2);
 
@@ -892,10 +820,6 @@ function typeKey(e) {
 
                     removeWordsOffScreen();
                     setPageLengths();
-                } else {
-                    console.log(typedWord);
-                    console.log(correctWord);
-                    console.log(currentShownWord);
                 }
             }
             // ---------------------------------------------------------------
@@ -916,7 +840,7 @@ function checkError(index) {
     let lastTypedWord = currentTypedWords[index]
     let correctLastWord = text[index]
     let lastShownWord = $("#words").find("div").eq(index)
-    
+
     if (lastTypedWord != correctLastWord) {
         lastShownWord.addClass("error");
     }
@@ -993,7 +917,7 @@ function checkKey(e) {
         }
         // -------------------------------------------------------------
     }
-    if (text.length > 0) {
+    if (text.length > 0 && !$("#typing").hasClass("hidden")) {
         if (!$("#words").hasClass("hidden") && typed.length != 0) {
             let typedAsWords = getTypedAsWords();
             let currentWordLength = typedAsWords[typedAsWords.length - 1].length;
@@ -1045,22 +969,6 @@ function checkKey(e) {
     }
 }
 
-
-
-document.addEventListener('keypress', typeKey);
-document.addEventListener('keydown', checkKey);
-
-// Caret is moved on window resize
-$(window).resize(function () {
-    if (currentBookStats) {
-        nextWordSet(true);
-    }
-    if (!$("#words").hasClass("hidden")) {
-        updateCaret();
-    }
-});
-
-
 function getTypedAsWords() {
     let words = [""];
     for (let char of typed) {
@@ -1096,4 +1004,29 @@ function replaceAccents(word) {
         newWord += char;
     }
     return newWord;
+}
+
+export function readyFullText() {
+    fullText = window.electron.getDataFromJSON(currentBookData.textPath[currentBookStats.chapter]);
+
+    for (let toReplace of settings.removeFromText) {
+        fullText = fullText.join(" ").replaceAll(toReplace, "").split(" ");
+    }
+
+    let punctuation = [`!`, `?`, `.`, `,`, `:`, `;`, `'`, `"`, "`"];
+    if (settings.removePunctuation) {
+        for (let punc of punctuation) {
+            fullText = fullText.join(" ").replaceAll(punc, "").split(" ");
+        }
+    }
+
+    if (settings.removeCaps) {
+        fullText = fullText.map(word => {
+            return word.toLowerCase();
+        });
+    }
+
+    if (settings.removeNewLine) {
+        fullText = fullText.join(" ").replaceAll("\n ", " ").split(" ");
+    }
 }

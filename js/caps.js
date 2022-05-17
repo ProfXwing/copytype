@@ -2,7 +2,6 @@
 
 import {settings} from "./typing.js";
 
-console.log('caps loaded')
 let capsState = false;
 
 function show() {
