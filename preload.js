@@ -8,6 +8,7 @@ const fs = require('fs');
 const nonce = crypto.randomBytes(16).toString('base64');
 const { Settings } = require('./js/model/settingsModel.js')
 const shell = require('electron').shell
+require('electron-disable-file-drop');
 
 exports.nonce = nonce;
 

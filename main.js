@@ -2,12 +2,31 @@ const {
     app,
     BrowserWindow,
     ipcMain,
+    Menu,
 } = require('electron');
 const path = require('path');
 const {
     createBook, deleteBook
 } = require('./js/library');
 
+const isMac = process.platform === 'darwin';
+
+const template = [
+    // { role: 'appMenu' }
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    }] : [])]
 
 
 function createWindow() {
@@ -15,9 +34,14 @@ function createWindow() {
         width: 1920,
         height: 1080,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-        }
+            // preload: path.join(__dirname, 'preload.js'),
+        },
+        devTools: false //prod
     })
+
+    // prod
+    // Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+    // win.removeMenu();
 
     win.loadFile('index.html');
 
