@@ -67,6 +67,10 @@ async function createBook(event) {
         }
     }
 
+    if (fs.existsSync('library') == false) {
+        fs.mkdirSync('library');
+    }
+
     let epubLibDir = `library/${path.parse(epubDir).name}/`
     let coverImagePath = epubLibDir + "cover.png";
     let jsonPath = epubLibDir + "meta-data.json";
@@ -163,7 +167,7 @@ async function createBook(event) {
         // Gets a snapshot of the cover if it's xhtml or html
         let imgExt = path.extname(coverImageFile);
         if (imgExt == ".xhtml" || imgExt == ".html") {
-            let coverDoc = parse((await zip.entryData(path.join(`${opfDir}/../`, coverImageFile))).toString());
+            let coverDoc = parse((await zip.entryData(path.join(`${opfDir}/../`, coverImageFile).replaceAll("\\", "/"))).toString());
             let newHTML = "";
             let extractedImageCount = 0;
             for (let elem of coverDoc.querySelector('body').querySelectorAll("*")) {
@@ -187,7 +191,7 @@ async function createBook(event) {
                         elem.setAttribute("src", imgPath.toString());
                         extractedImageCount++;
                     } else {
-                        imgPath = path.join(`${opfDir}/../`, elem.getAttribute("src"));
+                        imgPath = path.join(`${opfDir}/../`, elem.getAttribute("src")).replaceAll("\\", "/");
                         await zip.extract(imgPath, newImgPath);
                     }
 
