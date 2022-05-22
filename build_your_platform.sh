@@ -1,0 +1,1 @@
+npx electron-packager . --icon=icon.ico --out=out
