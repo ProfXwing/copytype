@@ -509,7 +509,9 @@ function readyText(chapText) {
         chapText = chapText.replaceAll('\n\n', '\n');
     }
 
-    chapText = chapText.replaceAll("\n", "\n ").replace(/  +/g, ' ').split(" ");
+    chapText = chapText.replaceAll("\n", "\n ").replace(/  +/g, ' ')
+    chapText = chapText.replace(/[\t\r\v\f\b\0]/g, '');
+    chapText = chapText.split(" ");
 
     return chapText;
     // -------------------------------------------------------------
