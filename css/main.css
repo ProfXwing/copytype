@@ -166,6 +166,7 @@ body {
     display: inline-block;
     margin-bottom: 20px;
     width: 300px;
+    padding: 0 10px;
 
 }
 
@@ -238,6 +239,10 @@ body {
     width: inherit;
     height: 300px;
     text-align: center;
+    overflow: hidden;
+    display:grid;
+    align-items: center;
+    justify-content: center;
 }
 
 .title-wrapper {
@@ -927,4 +932,16 @@ body {
 
 #restart-book-dialog h1 {
     margin: 0;
+}
+
+.html-img {
+    transform-origin: top;
+    background-color: white;
+    color: black;
+}
+
+.html-img * {
+    /* margin: 0; */
+    padding: 10px;
+    white-space: nowrap;
 }

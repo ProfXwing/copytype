@@ -58,8 +58,7 @@ setInterval(() => {
 
 var showChapterEvent;
 
-
-
+var libraryLoaded = false;
 
 const accents = [
     ["áàâäåãąą́āą̄ă", "a"],
@@ -122,6 +121,11 @@ export function switchContent(div) {
     $("#no-book-warning").addClass("hidden");
 
     $(div).removeClass("hidden");
+    
+    if (div == "#library" && !libraryLoaded) {
+        libraryLoaded = true;
+        window.electron.loadLibrary();
+    }
 }
 
 function getShownWordText(index) {

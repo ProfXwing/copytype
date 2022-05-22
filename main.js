@@ -36,12 +36,12 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         },
-        // devTools: false //prod
+        devTools: false //prod
     })
 
     // prod
-    // Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-    // win.removeMenu();
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+    win.removeMenu();
 
     win.loadFile('index.html');
 

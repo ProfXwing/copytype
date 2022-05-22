@@ -3,7 +3,6 @@ const {
     parse
 } = require("node-html-parser");
 const path = require("path");
-const puppeteer = require("puppeteer");
 const fs = require('fs');
 const {
     dialog,
@@ -99,14 +98,14 @@ async function createBook(event) {
     if (fileType == '.epub') {
         // TODO: Other people probably did this better. Use theirs instead.
         // Get rootfile from container xml 
-        const containerXML =  (await zip.entryData('META-INF/container.xml')).toString();
+        const containerXML = (await zip.entryData('META-INF/container.xml')).toString();
         const containerDoc = parse(containerXML);
         const opfDir = containerDoc.querySelector("rootfile").getAttribute("full-path");
-    
+
         // Get cover file from rootfile
         const opfData = (await zip.entryData(opfDir)).toString();
         const opfDoc = parse(opfData);
-    
+
         let coverMeta;
         for (let meta of opfDoc.querySelectorAll("meta")) {
             if (meta.getAttribute("name") == "cover") {
@@ -114,12 +113,12 @@ async function createBook(event) {
             }
         }
         let coverImageFile = thoroughQuery(opfDoc, coverMeta).getAttribute("href");
-    
+
         // Create directory for epub data
         if (!fs.existsSync(epubLibDir)) {
             fs.mkdirSync(epubLibDir);
         }
-    
+
         let chaptersDir = epubLibDir + "chapters/"
         // Convert epub to text 
         if (!fs.existsSync(chaptersDir)) {
@@ -134,66 +133,24 @@ async function createBook(event) {
                 let chapHTMLString = await (await zip.entryData(path.join(opfDir + `/../${chapHTMLPath}`).replace(/\\/g, "/"))).toString();
                 let chapDoc = parse(chapHTMLString);
                 let chapText = chapDoc.querySelector("body").innerText;
-                
+
                 chapText = readyText(chapText);
 
                 if (chapText != "") {
-    
+
                     let chapTextPath = chaptersDir + `${chapCount}.json`;
                     let chapTextJson = JSON.stringify(chapText);
-        
+
                     fs.writeFileSync(chapTextPath, chapTextJson);
-        
+
                     epubText.push(chapTextPath);
 
                     chapCount++;
                 }
             }
         }
-    
-        // Gets a snapshot of the cover if it's xhtml or html
-        let imgExt = path.extname(coverImageFile);
-        if (imgExt == ".xhtml" || imgExt == ".html") {
-            if (fs.existsSync('extracted')) {
-                fs.rmdirSync("extracted", {
-                    recursive: true
-                });
-            }
-            fs.mkdirSync('extracted');
-            await zip.extract(null, './extracted');
-            await zip.close();
-    
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-            let coverXHTMLPath = `file://${path.resolve("./extracted")}\\${path.join(`${opfDir}/../${coverImageFile}`)}`;
-            await page.goto(coverXHTMLPath);
-    
-            await page.setViewport({
-                width: 425,
-                height: 550,
-    
-                // Todo: make this adjustable 
-                deviceScaleFactor: 8
-            });
-    
-            await page.screenshot({
-                path: coverImagePath,
-                fullpage: true
-            });
-            await browser.close();
-    
-            fs.rmdirSync("extracted", {
-                recursive: true
-            });
-        } else if (imgExt == ".jpg" || imgExt == ".png") {
-            let zippedCoverPath = path.join(opfDir + "/../" + coverImageFile);
-            await zip.extract(zippedCoverPath.replace(/\\/g, "/"), coverImagePath.replace(/\\/g, "/"));
-        }
-    
-        await zip.close();
-    
+
         metaData = {
-            "coverImg": coverImagePath,
             "title": opfDoc.querySelector("dc\\:title").innerText,
             "author": opfDoc.querySelector("dc\\:creator").innerText,
             "written": opfDoc.querySelector("dc\\:date").innerText,
@@ -201,6 +158,90 @@ async function createBook(event) {
             "dateStarted": new Date(),
             "division": "Chapter"
         }
+
+
+        // Gets a snapshot of the cover if it's xhtml or html
+        let imgExt = path.extname(coverImageFile);
+        if (imgExt == ".xhtml" || imgExt == ".html") {
+            let coverDoc = parse((await zip.entryData(path.join(`${opfDir}/../`, coverImageFile))).toString());
+            let newHTML = "";
+            let extractedImageCount = 0;
+            for (let elem of coverDoc.querySelector('body').querySelectorAll("*")) {
+                let text = readyText(elem.innerText).join(" ");
+                if (text != "") {
+                    newHTML += `<${elem.tagName}>${text}</${elem.tagName}>`;
+                }
+
+                if (elem.tagName == "IMG") {
+                    let newImgPath = path.join(epubLibDir, `images/`)
+                    if (!fs.existsSync(newImgPath)) {
+                        fs.mkdirSync(newImgPath);
+                    }
+
+                    let src = elem.getAttribute("src");
+                    let imgPath;
+                    if (src.startsWith("data:image")) {
+                        let imgData = src.split(",")[1];
+                        imgPath = path.join(newImgPath, `${extractedImageCount}.png`);
+                        fs.writeFileSync(imgPath, Buffer.from(imgData, "base64"));
+                        elem.setAttribute("src", imgPath.toString());
+                        extractedImageCount++;
+                    } else {
+                        imgPath = path.join(`${opfDir}/../`, elem.getAttribute("src"));
+                        await zip.extract(imgPath, newImgPath);
+                    }
+
+                    newImgPath = path.join(newImgPath, path.parse(imgPath).base);
+                    newHTML += `<img src="${newImgPath}" />`;
+                }
+            }
+
+            metaData.coverHTML = newHTML;
+
+            // decided not to use puppeteer because it's slow and large
+
+            // if (fs.existsSync('extracted')) {
+            //     fs.rmdirSync("extracted", {
+            //         recursive: true
+            //     });
+            // }
+            // fs.mkdirSync('extracted');
+            // await zip.extract(null, './extracted');
+            // await zip.close();
+
+            // event.sender.send('render-html', path.join('./extracted', `${opfDir + "/../"}`, coverImageFile).toString());
+
+            // const browser = await puppeteer.launch();
+            // const page = await browser.newPage();
+            // let coverXHTMLPath = `file://${path.resolve("./extracted")}\\${path.join(`${opfDir}/../${coverImageFile}`)}`;
+            // await page.goto(coverXHTMLPath);
+
+            // await page.setViewport({
+            //     width: 425,
+            //     height: 550,
+
+            //     // Todo: make this adjustable 
+            //     deviceScaleFactor: 8
+            // });
+
+            // await page.screenshot({
+            //     path: coverImagePath,
+            //     fullpage: true
+            // });
+            // await browser.close();
+
+            // fs.rmdirSync("extracted", {
+            //     recursive: true
+            // });
+        } else if (imgExt == ".jpg" || imgExt == ".png") {
+            let zippedCoverPath = path.join(opfDir + "/../" + coverImageFile);
+            await zip.extract(zippedCoverPath.replace(/\\/g, "/"), coverImagePath.replace(/\\/g, "/"));
+            metaData.coverImage = coverImagePath;
+        }
+
+        await zip.close();
+
+
     } else if (fileType == '.txt') {
         let chapText = fs.readFileSync(epubDir, 'utf8');
         chapText = readyText(chapText);
@@ -211,27 +252,32 @@ async function createBook(event) {
         fs.writeFileSync(chapTextPath, chapTextJson);
 
         let epubText = [chapTextPath];
-    
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.setContent(`<h1 style="text-align:center">${path.parse(epubDir).name}</h1>`);
 
-        await page.setViewport({
-            width: 425,
-            height: 550,
+        // decided not to use puppeteer because it's slow and large
 
-            // Todo: make this adjustable 
-            deviceScaleFactor: 8
-        });
+        // const browser = await puppeteer.launch();
+        // const page = await browser.newPage();
+        // await page.setContent(`<h1 style="text-align:center">${path.parse(epubDir).name}</h1>`);
 
-        await page.screenshot({
-            path: coverImagePath,
-            fullpage: true
-        });
-        await browser.close();
-    
+        // await page.setViewport({
+        //     width: 425,
+        //     height: 550,
+
+        //     // Todo: make this adjustable 
+        //     deviceScaleFactor: 8
+        // });
+
+        // await page.screenshot({
+        //     path: coverImagePath,
+        //     fullpage: true
+        // });
+        // await browser.close();
+
         metaData = {
-            "coverImg": coverImagePath,
+            "coverHTML": `<h1>${path.parse(epubDir).name}</h1>`,
+            "coverStyle": [
+                ["text-align", "center"]
+            ],
             "title": path.parse(epubDir).name,
             "textPath": epubText,
             "dateStarted": new Date(),
@@ -244,35 +290,103 @@ async function createBook(event) {
 
 
         let html = mobi.read_text();
-        event.sender.send('console-log', html);
         let book_data = mobi.get_book_data();
-        
+
+        let title = book_data.title;
+        let author = book_data.author;
+
+
+        metaData = {
+            "title": title,
+            "author": author,
+            "dateStarted": new Date(),
+            "division": "Page"
+        }
+
+        // TODO: options (first page, first image, custom image)
+        let coverImage = mobi.get_cover_image();
+        if (coverImage) {
+            fs.writeFileSync(coverImagePath, coverImage, 'binary');
+            metaData.coverImg = coverImagePath;
+        }
+
         let textDoc = parse(html);
 
         let chapCount = 0;
         let epubText = [];
         let chapText = "";
+        let chapHTML = "";
+        let extractedImageCount = 0;
 
         let lastChild = textDoc.querySelector("body").lastChild;
         for (let elem of textDoc.querySelector("body").childNodes) {
             chapText += elem.innerText;
             chapText += " ";
-            
+
+            if (chapCount == 0 && !coverImage) {
+                let text = readyText(elem.innerText).join(" ");
+                // Adds all text elements to cover snapshot
+                if (text != "") {
+                    chapHTML += `<${elem.tagName}>${text}</${elem.tagName}>`;
+                }
+
+                // gets image elements from elem
+                let imgElems = [];
+                if (elem.tagName == "IMG") {
+                    imgElems.push(elem);
+                } else if (elem.querySelectorAll('img').length > 0) {
+                    imgElems = elem.querySelectorAll('img');
+                }
+                
+                // extracts images from elem and adds to snapshot
+                for (let imgElem of imgElems) {
+                    let newImgPath = path.join(epubLibDir, `images/`)
+                    if (!fs.existsSync(newImgPath)) {
+                        fs.mkdirSync(newImgPath);
+                    }
+                
+                    let imgPath = path.join(newImgPath, `${extractedImageCount}.png`);
+                    let src = imgElem.getAttribute("src");
+                    
+                    if (!src && imgElem.getAttribute("recindex")) {
+                        let imageBinary = mobi.read_image(imgElem.getAttribute("recindex") - 1);
+                        fs.writeFileSync(imgPath, imageBinary, 'binary');
+                    } else {
+                        if (src.startsWith("data:image")) {
+                            let imgData = src.split(",")[1];
+                            fs.writeFileSync(imgPath, Buffer.from(imgData, "base64"));
+                            imgElem.setAttribute("src", imgPath.toString());
+                            extractedImageCount++;
+                        } // other image types?
+                    }
+                    
+                    chapHTML += `<img src="${imgPath}" />`;
+                }
+            }
+
+            // next page on page break
             if (elem.rawTagName == 'mbp:pagebreak' || elem == lastChild) {
                 chapText = readyText(chapText);
                 if (chapText != "" && chapText != " ") {
                     let chapTextPath = chaptersDir + `${chapCount}.json`;
                     let chapTextJson = JSON.stringify(chapText);
-    
+
                     fs.writeFileSync(chapTextPath, chapTextJson);
-    
+
                     epubText.push(chapTextPath);
-    
+
                     chapCount++;
                     chapText = "";
                 }
             }
         }
+
+        metaData.textPath = epubText;
+        if (chapHTML != "") {
+            metaData.coverHTML = chapHTML;
+        }
+
+        event.sender.send('console-log', textDoc.querySelector("body").innerText);
 
 
         // let chapText = textDoc.querySelector("body").innerText;
@@ -288,55 +402,42 @@ async function createBook(event) {
         //     fs.writeFileSync(chapTextPath, chapTextJson);
         // }
 
-        let title = book_data.title;
-        let author = book_data.author;
 
 
-        // TODO: options (first page, first image, custom image)
-        // TODO: async so user can choose option while screenshot is processing
-        let coverImage = mobi.get_cover_image();
-        if (coverImage) {
-            fs.writeFileSync(coverImagePath, coverImage, 'binary');
-        } else {
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
+        // decided not to use puppeteer 
 
-            let renderHTML = parse(html);
-            let imgSrcs = mobi.render_to(renderHTML);
+        // const browser = await puppeteer.launch();
+        // const page = await browser.newPage();
 
-            page.setContent(html);
-            page.evaluate((imgSrcs) => {
-                var imgDoms = document.querySelectorAll("img");
-                for (var i = 0 ;i < imgDoms.length; i++) {
-                    var imgDom = imgDoms[i];
-                    imgDom.src = imgSrcs[i];
-                }
+        // let renderHTML = parse(html);
+        // let imgSrcs = mobi.render_to(renderHTML);
 
-            }, imgSrcs);
-            
-            await page.setViewport({
-                width: 425,
-                height: 550,
+        // page.setContent(html);
+        // page.evaluate((imgSrcs) => {
+        //     var imgDoms = document.querySelectorAll("img");
+        //     for (var i = 0; i < imgDoms.length; i++) {
+        //         var imgDom = imgDoms[i];
+        //         imgDom.src = imgSrcs[i];
+        //     }
 
-                // Todo: make this adjustable 
-                deviceScaleFactor: 8
-            });
+        // }, imgSrcs);
 
-            await page.screenshot({
-                path: coverImagePath,
-                fullpage: true
-            });
-            await browser.close(); 
-        }
+        // await page.setViewport({
+        //     width: 425,
+        //     height: 550,
 
-        metaData = {
-            "coverImg": coverImagePath,
-            "title": title,
-            "author": author,
-            "textPath": epubText,
-            "dateStarted": new Date(),
-            "division": "Page"
-        }
+        //     // Todo: make this adjustable 
+        //     deviceScaleFactor: 8
+        // });
+
+        // await page.screenshot({
+        //     path: coverImagePath,
+        //     fullpage: true
+        // });
+        // await browser.close();
+
+
+
     }
 
     let bookStats = new BookStats(path.parse(epubDir).name);
@@ -377,7 +478,6 @@ function thoroughQuery(document, id) {
     return item;
 }
 
-
 // Ready chapText for typing
 function readyText(chapText) {
     //--------------------Ready chapText for typing----------------------
@@ -397,7 +497,7 @@ function readyText(chapText) {
     // Don't allow last character to be whitespace
     while (chapText[chapText.length - 1] == "\n" || chapText[chapText.length - 1] == " ") {
         chapText.splice(chapText.length - 1, 1);
-    }            
+    }
 
     chapText = chapText.join("");
 
@@ -415,7 +515,9 @@ async function deleteBook(event, bookName) {
     event.sender.send("start-loading");
     let path = `library/${bookName}`;
     if (fs.existsSync(path)) {
-        await fs.rmdirSync(path, { recursive: true });
+        fs.rmdirSync(path, {
+            recursive: true
+        });
         event.sender.send("remove-from-library", bookName);
         event.sender.send("stop-loading");
         let settings = getSettings();
@@ -462,6 +564,7 @@ function defaultSettings() {
 }
 
 // Gets all books previously added and adds them to library
+// todo: alphabetize
 async function loadLibrary() {
     let dir = await fs.promises.opendir('library/')
     for await (const child of dir) {
@@ -472,17 +575,34 @@ async function loadLibrary() {
 
 // Add book to library from path
 function addLibraryBook(bookDir) {
-    let coverImagePath = `library/${bookDir.name}/cover.png`
-    let jsonPath = `library/${bookDir.name}/meta-data.json`;
-    if (fs.existsSync(coverImagePath) && fs.existsSync(jsonPath)) {
-        let data = JSON.parse(fs.readFileSync(jsonPath));
+    let data, cover;
+    let jsonPath = `./library/${bookDir.name}/meta-data.json`;
+    if (fs.existsSync(jsonPath)) {
+        data = JSON.parse(fs.readFileSync(jsonPath));
+    } else {
+        return;
+    }
+
+    if (data.coverImg) {
+        if (fs.existsSync(data.coverImg)) {
+            cover = `<img id="cover-img" src='${data.coverImg}'>`;
+        } else {
+            return;
+        }
+    } else if (data.coverHTML) {
+        cover = `<div class="html-img">${data.coverHTML}</div>`;
+    }
+
+    if (cover) {
 
         let libraryElem = document.getElementById("library");
         let newBook = document.createElement("div");
         newBook.classList.add("book-choice");
         newBook.setAttribute("id", bookDir.name);
+
+
         newBook.innerHTML = `<div class="cover-img-wrapper">
-                                <img id="cover-img" src='${data.coverImg}'>
+                                ${cover}
                             </div>
                             <div class="title-wrapper">
                                 <label id="book-title">${data.title}</label>
@@ -507,7 +627,42 @@ function addLibraryBook(bookDir) {
             ipcRenderer.send('load-info', bookDir.name);
         }
 
-        libraryElem.prepend(newBook);
+        if (data.coverStyle) {
+            for (let style of data.coverStyle) {
+                newBook.style[style[0]] = style[1];
+            }
+        }
+
+
+        if (data.coverHTML) {
+            let htmlImg = newBook.querySelector('.html-img');
+            htmlImg.style.opacity = 0;
+
+            // todo: alphabetize instead
+            libraryElem.prepend(newBook);
+
+            // set size after 0.1s to allow for image to load, 
+            // would love for it to load when the div is ready, but idk how
+            setTimeout(() => {
+                let imgRect = htmlImg.getBoundingClientRect();
+                let imgWrapperRect = libraryElem.getElementsByClassName("cover-img-wrapper")[0].getBoundingClientRect();
+
+                let widthOffset = imgRect.width - imgWrapperRect.width;
+                let heightOffset = imgRect.height - imgWrapperRect.height;
+                let ratio;
+                if (widthOffset > heightOffset && widthOffset > 0) {
+                    ratio = imgWrapperRect.width / imgRect.width;
+                } else if (heightOffset > widthOffset && heightOffset > 0) {
+                    ratio = imgWrapperRect.height / imgRect.height;
+                } else return;
+
+                let newHeight = imgRect.height * ratio;
+                htmlImg.style.marginTop = `${(imgWrapperRect.height - newHeight) / 2}px`;
+
+                htmlImg.style.transform = `scale(${ratio})`;
+                htmlImg.style.opacity = '1';
+            }, 100);
+        }
     }
 }
 

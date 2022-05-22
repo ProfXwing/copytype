@@ -45,12 +45,14 @@ $('#no-book-warning').find("#go-library").click(() => {
 $('#book-finished').find("#go-library").click(() => {
     saveTyping();
     switchContent("#library");
+    stopTyping();
     hideDialog();
 });
 
 $("#book-finished").find("#book-info").click(() => {
-    stopTyping();
+    saveTyping();
     loadStats(currentBookStats.bookName);
+    stopTyping();
     hideDialog();
 })
 

@@ -25,15 +25,13 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.57",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
     "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "electron": "^18.2.3",
-    "eslint": "^8.15.0"
+    "electron": "^18.2.3"
   },
   "dependencies": {
     "electron-disable-file-drop": "^1.0.2",
     "electron-squirrel-startup": "^1.0.0",
     "node-html-parser": "^3.3.4",
-    "node-stream-zip": "^1.13.4",
-    "puppeteer": "^9.1.1"
+    "node-stream-zip": "^1.13.4"
   },
   "config": {
     "forge": {

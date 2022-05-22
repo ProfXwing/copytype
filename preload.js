@@ -6,8 +6,8 @@ const {
 const crypto = require('crypto');
 const fs = require('fs');
 const nonce = crypto.randomBytes(16).toString('base64');
-const { Settings } = require('./js/model/settingsModel.js')
-const shell = require('electron').shell
+const { Settings } = require('./js/model/settingsModel.js');
+const shell = require('electron').shell;
 require('electron-disable-file-drop');
 
 exports.nonce = nonce;
@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('electron', {
     deleteBook: (bookName) => {
         ipcRenderer.send("delete-book", bookName);
     },
+    loadLibrary: library.loadLibrary,
     handleInitTyping: (callback) => {
         ipcRenderer.on('init-typing', (event, textFile) => {
             callback(textFile)
@@ -85,8 +86,6 @@ if (!fs.existsSync("settings.json")) {
     library.saveSettings(settings);
 }
 
-
-
 window.addEventListener('DOMContentLoaded', () => {
     const links = document.querySelectorAll('a[href]')
     Array.prototype.forEach.call(links, function (link) {
@@ -113,7 +112,6 @@ window.addEventListener('DOMContentLoaded', () => {
         script.setAttribute("nonce", nonce);
     }
 
-    library.loadLibrary();
 
     ipcRenderer.on('start-loading', startLoading)
     ipcRenderer.on('stop-loading', stopLoading)
