@@ -1,6 +1,6 @@
 node_modules
 out
-library/notfree
+library
 .DS_Store
 .eslintrc.json
 settings.json
