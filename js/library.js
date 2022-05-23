@@ -32,6 +32,8 @@ function removeFancyTypography(textToClean) {
 
 async function createBook(event) {
     var zip;
+    var mobi;
+    
     let epubDir;
     let dialogResult = await dialog.showOpenDialog({
         properties: ['openFile'],
@@ -65,7 +67,17 @@ async function createBook(event) {
                 }
             }
         }
-    } //todo mobi
+    } else if (fileType == '.mobi') {
+        let data = fs.readFileSync(epubDir).buffer;
+        mobi = new MobiFile(data);
+        mobi.load();
+
+        // i guess this is how this works. i don't have any mobi books with drm
+        if (mobi.mobi_header.drm_offset != 4294967295) {
+            event.sender.send("drm-error");
+            return; 
+        }
+    } 
 
     if (fs.existsSync('library') == false) {
         fs.mkdirSync('library');
@@ -288,11 +300,6 @@ async function createBook(event) {
             "division": ""
         }
     } else if (fileType == '.mobi') {
-        let data = fs.readFileSync(epubDir).buffer;
-        let mobi = new MobiFile(data);
-        mobi.load();
-
-
         let html = mobi.read_text();
         let book_data = mobi.get_book_data();
 
