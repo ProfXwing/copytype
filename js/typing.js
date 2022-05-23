@@ -348,12 +348,11 @@ export function nextButton() {
 function prevWordSet() {
     typed = [];
     currentPage--;
-    // if (currentPage > 0) {
-    //     currentPage--;
-    // }
     if (currentBookStats.typedPos == 0) {
         if (currentBookStats.chapter > 0) {
             currentBookStats.chapter--;
+        } else {
+            currentPage++;
         }
         showChapterLabel();
         readyFullText();
@@ -398,12 +397,18 @@ function prevWordSet() {
         let currentWord = children[children.length - 1];
 
         for (let char of word) {
+            let letterElem = document.createElement("letter");
+            letterElem.setAttribute('char', char);
+
             if (char == "\n") {
-                $(currentWord).append(`<letter char='${char}' class="nlChar"><i class="fas fa-angle-down"></i></letter>`);
+                letterElem.classList.add("nlChar");
+                letterElem.innerHTML = `<i class="fas fa-angle-down"></i>`
+                $(currentWord).append(letterElem);
                 $("#words").append("<br>");
             } else {
-                $(currentWord).append(`<letter char='${char}'>${char}</letter>`);
+                letterElem.innerHTML = char;
             }
+            $(currentWord).append(letterElem);
         }
     }
 
@@ -516,18 +521,24 @@ export function nextWordSet(keepCurrent = false) {
     $("#words").empty();
     for (let word of text) {
         $("#words").append(`<div class="word"></div>`);
-        let children = $("#words").children()
+        let children = $("#words").children();
         let currentWord = children[children.length - 1];
 
         for (let char of word) {
+            let letterElem = document.createElement("letter");
+            letterElem.setAttribute('char', char);
+
+
             if (char == "\n") {
-                $(currentWord).append(`<letter char='${char}' class="nlChar"><i class="fas fa-angle-down"></i></letter>`);
+                letterElem.classList.add("nlChar");
+                letterElem.innerHTML = `<i class="fas fa-angle-down"></i>`
+                $(currentWord).append(letterElem);
                 $("#words").append("<br>");
             } else {
-                $(currentWord).append(`<letter char='${char}'>${char}</letter>`);
+                letterElem.innerHTML = char;
             }
+            $(currentWord).append(letterElem);
         }
-
     }
 
     // Styles words that are already typed
