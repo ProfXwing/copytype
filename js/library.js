@@ -80,7 +80,7 @@ async function createBook(event) {
             event.sender.send('book-exists');
             return;
         } else {
-            fs.rmdirSync(epubLibDir, {
+            fs.rmSync(epubLibDir, {
                 recursive: true
             });
         }
@@ -521,7 +521,7 @@ async function deleteBook(event, bookName) {
     event.sender.send("start-loading");
     let path = `library/${bookName}`;
     if (fs.existsSync(path)) {
-        fs.rmdirSync(path, {
+        fs.rmSync(path, {
             recursive: true
         });
         event.sender.send("remove-from-library", bookName);
