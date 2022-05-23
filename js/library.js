@@ -65,7 +65,7 @@ async function createBook(event) {
                 }
             }
         }
-    }
+    } //todo mobi
 
     if (fs.existsSync('library') == false) {
         fs.mkdirSync('library');
