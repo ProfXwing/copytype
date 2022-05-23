@@ -49,7 +49,8 @@ var caretPosY;
 
 
 var stopTimerEvent = setTimeout(() => {
-    stopTimer();
+    saveTyping(false);
+    stopTimer(5000);
 }, 5000);
 
 setInterval(() => {
@@ -288,9 +289,9 @@ export function continueTyping() {
     }
 }
 
-export async function saveTyping() {
+export async function saveTyping(stopping=true) {
     if (currentBookStats) {
-        stopTimer();
+        if (stopping) {stopTimer();}
         // Bookmark
         currentBookStats.typedPos += getTypedAsWords().length - 1;
         currentBookStats.wpm.correctChars += getCorrectChars();
@@ -346,9 +347,10 @@ export function nextButton() {
 
 function prevWordSet() {
     typed = [];
-    if (currentPage > 0) {
-        currentPage--;
-    }
+    currentPage--;
+    // if (currentPage > 0) {
+    //     currentPage--;
+    // }
     if (currentBookStats.typedPos == 0) {
         if (currentBookStats.chapter > 0) {
             currentBookStats.chapter--;
@@ -384,6 +386,8 @@ function prevWordSet() {
         text = new_text;
     }
 
+    stopTimer();
+    saveTyping(false);
     hideWords();
 
     $("#words").empty();
@@ -454,8 +458,6 @@ export function nextWordSet(keepCurrent = false) {
         $("#chapter-label").removeClass("hide-chapter-label");
     }
 
-    stopTimer();
-
     if (!keepCurrent) {
         currentPage++;
         currentBookStats.wpm.correctChars += getCorrectChars();
@@ -506,6 +508,9 @@ export function nextWordSet(keepCurrent = false) {
         }
         text = new_text;
     }
+
+    stopTimer();
+    saveTyping(false);
 
     hideWords();
     $("#words").empty();
@@ -802,6 +807,7 @@ function typeKey(e) {
             // probably shouldn't do this, but i'm gonna do it anyway 😈
             clearTimeout(stopTimerEvent);
             stopTimerEvent = setTimeout(() => {
+                saveTyping(false);
                 stopTimer(5000);
             }, 5000);
 
