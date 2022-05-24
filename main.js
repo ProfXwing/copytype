@@ -7,6 +7,7 @@ const path = require('path');
 const {
     createBook, deleteBook
 } = require('./js/library');
+const fs = require('fs');
 
 
 function createWindow() {
@@ -61,7 +62,11 @@ function createWindow() {
 
 app.whenReady().then(() => {
     // Because the running directory changes after compiled
-    process.chdir(app.getAppPath());
+    let dataPath = path.join(app.getPath('appData'), 'copytype');
+    if (!fs.existsSync(dataPath)) {
+        fs.mkdirSync(dataPath);
+    }
+    process.chdir(dataPath);
 
     createWindow()
 

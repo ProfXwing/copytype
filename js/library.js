@@ -6,7 +6,8 @@ const path = require("path");
 const fs = require('fs');
 const {
     dialog,
-    ipcRenderer
+    ipcRenderer,
+    app
 } = require('electron');
 const {
     BookStats
@@ -207,7 +208,7 @@ async function createBook(event) {
                         await zip.extract(imgPath, newImgPath);
                     }
 
-                    newImgPath = path.join(newImgPath, path.parse(imgPath).base);
+                    newImgPath = path.join(process.cwd(), newImgPath, path.parse(imgPath).base);
                     newHTML += `<img src="${newImgPath}" />`;
                 }
             }
@@ -371,7 +372,7 @@ async function createBook(event) {
                         } // other image types?
                     }
                     
-                    chapHTML += `<img src="${imgPath}" />`;
+                    chapHTML += `<img src="${path.join(process.cwd(), imgPath)}" />`;
                 }
             }
 
