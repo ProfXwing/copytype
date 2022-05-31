@@ -293,15 +293,10 @@ export async function saveTyping(stopping=true) {
     if (currentBookStats) {
         if (stopping) {stopTimer();}
         // Bookmark
-        let originalTypedPos = currentBookStats.typedPos;
-        currentBookStats.typedPos += getTypedAsWords().length - 1;
-        currentBookStats.wpm.correctChars += getCorrectChars();
-        await window.electron.saveBookStats(currentBookStats);
-
-        // preserve original position
-        if (!stopping) {
-            currentBookStats.typedPos = originalTypedPos;
-        }
+        let savedBookStats = {...currentBookStats};
+        savedBookStats.typedPos = currentBookStats.typedPos + getTypedAsWords().length - 1;
+        savedBookStats.wpm.correctChars = currentBookStats.wpm.correctChars + getCorrectChars();
+        await window.electron.saveBookStats(savedBookStats);
     }
 }
 
@@ -521,7 +516,9 @@ export function nextWordSet(keepCurrent = false) {
     }
 
     stopTimer();
-    saveTyping(false);
+    if (!keepCurrent) {
+        saveTyping(false);
+    }
 
     hideWords();
     $("#words").empty();
