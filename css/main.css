@@ -225,6 +225,7 @@ body {
     background: var(--sub-color)
 }
 
+/** This might be useless now - VVM **/
 #cover-img {
     max-width: 100%;
     max-height: 100%;
