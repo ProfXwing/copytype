@@ -319,7 +319,7 @@ async function createBook(event) {
         let coverImage = mobi.get_cover_image();
         if (coverImage) {
             fs.writeFileSync(coverImagePath, coverImage, 'binary');
-            metaData.coverImg = coverImagePath;
+            metaData.coverImage = coverImagePath;
         }
 
         let textDoc = parse(html);
@@ -594,13 +594,15 @@ function addLibraryBook(bookDir) {
     if (fs.existsSync(jsonPath)) {
         data = JSON.parse(fs.readFileSync(jsonPath));
     } else {
+        console.error("Could not find book at: ", jsonPath);
         return;
     }
 
-    if (data.coverImg) {
-        if (fs.existsSync(data.coverImg)) {
-            cover = `<img id="cover-img" src='${data.coverImg}'>`;
+    if (data.coverImage) {
+        if (fs.existsSync(data.coverImage)) {
+            cover = `<img class="html-img" src='${path.resolve(data.coverImage)}'>`;
         } else {
+            console.error("Book "+bookDir.name+" is missing its alleged cover image ("+data.coverImage+")");
             return;
         }
     } else if (data.coverHTML) {
@@ -648,35 +650,33 @@ function addLibraryBook(bookDir) {
         }
 
 
-        if (data.coverHTML) {
-            let htmlImg = newBook.querySelector('.html-img');
-            htmlImg.style.opacity = 0;
+        // todo: alphabetize instead
+        libraryElem.prepend(newBook);
 
-            // todo: alphabetize instead
-            libraryElem.prepend(newBook);
+        let htmlImg = newBook.querySelector('.html-img');
+        htmlImg.style.opacity = 0;
+        
 
-            // set size after 0.1s to allow for image to load, 
-            // would love for it to load when the div is ready, but idk how
-            setTimeout(() => {
-                let imgRect = htmlImg.getBoundingClientRect();
-                let imgWrapperRect = libraryElem.getElementsByClassName("cover-img-wrapper")[0].getBoundingClientRect();
+        // set size after 0.1s to allow for image to load, 
+        // would love for it to load when the div is ready, but idk how
+        setTimeout(() => {
+            let imgRect = htmlImg.getBoundingClientRect();
+            let imgWrapperRect = libraryElem.getElementsByClassName("cover-img-wrapper")[0].getBoundingClientRect();
 
-                let widthOffset = imgRect.width - imgWrapperRect.width;
-                let heightOffset = imgRect.height - imgWrapperRect.height;
-                let ratio;
-                if (widthOffset > heightOffset && widthOffset > 0) {
-                    ratio = imgWrapperRect.width / imgRect.width;
-                } else if (heightOffset > widthOffset && heightOffset > 0) {
-                    ratio = imgWrapperRect.height / imgRect.height;
-                } else return;
+            let widthOffset = imgRect.width - imgWrapperRect.width;
+            let heightOffset = imgRect.height - imgWrapperRect.height;
+            let ratio;
+            if (widthOffset > heightOffset && widthOffset > 0) {
+                ratio = imgWrapperRect.width / imgRect.width;
+            } else if (heightOffset > widthOffset && heightOffset > 0) {
+                ratio = imgWrapperRect.height / imgRect.height;
+            } else return;
+            let newHeight = imgRect.height * ratio;
+            htmlImg.style.marginTop = `${(imgWrapperRect.height - newHeight) / 2}px`;
 
-                let newHeight = imgRect.height * ratio;
-                htmlImg.style.marginTop = `${(imgWrapperRect.height - newHeight) / 2}px`;
-
-                htmlImg.style.transform = `scale(${ratio})`;
-                htmlImg.style.opacity = '1';
-            }, 100);
-        }
+            htmlImg.style.transform = `scale(${ratio})`;
+            htmlImg.style.opacity = '1';
+        }, 100);
     }
 }
 
