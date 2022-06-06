@@ -600,7 +600,7 @@ function addLibraryBook(bookDir) {
 
     if (data.coverImage) {
         if (fs.existsSync(data.coverImage)) {
-            cover = `<img class="html-img" src='${path.resolve(data.coverImage)}'>`;
+            cover = `<img id="cover-img" src='${path.resolve(data.coverImage)}'>`;
         } else {
             console.error("Book "+bookDir.name+" is missing its alleged cover image ("+data.coverImage+")");
             return;
@@ -653,30 +653,34 @@ function addLibraryBook(bookDir) {
         // todo: alphabetize instead
         libraryElem.prepend(newBook);
 
-        let htmlImg = newBook.querySelector('.html-img');
-        htmlImg.style.opacity = 0;
-        
-
-        // set size after 0.1s to allow for image to load, 
-        // would love for it to load when the div is ready, but idk how
-        setTimeout(() => {
-            let imgRect = htmlImg.getBoundingClientRect();
-            let imgWrapperRect = libraryElem.getElementsByClassName("cover-img-wrapper")[0].getBoundingClientRect();
-
-            let widthOffset = imgRect.width - imgWrapperRect.width;
-            let heightOffset = imgRect.height - imgWrapperRect.height;
-            let ratio;
-            if (widthOffset > heightOffset && widthOffset > 0) {
-                ratio = imgWrapperRect.width / imgRect.width;
-            } else if (heightOffset > widthOffset && heightOffset > 0) {
-                ratio = imgWrapperRect.height / imgRect.height;
-            } else return;
-            let newHeight = imgRect.height * ratio;
-            htmlImg.style.marginTop = `${(imgWrapperRect.height - newHeight) / 2}px`;
-
-            htmlImg.style.transform = `scale(${ratio})`;
-            htmlImg.style.opacity = '1';
-        }, 100);
+        // Sizing only for when there isn't a cover image. Otherwise, css can handle the sizing.
+        // poorly named, oops
+        if (data.coverHTML) {
+            let htmlImg = newBook.querySelector('.html-img');
+            htmlImg.style.opacity = 0;
+            
+    
+            // set size after 0.1s to allow for image to load, 
+            // would love for it to load when the div is ready, but idk how
+            setTimeout(() => {
+                let imgRect = htmlImg.getBoundingClientRect();
+                let imgWrapperRect = libraryElem.getElementsByClassName("cover-img-wrapper")[0].getBoundingClientRect();
+    
+                let widthOffset = imgRect.width - imgWrapperRect.width;
+                let heightOffset = imgRect.height - imgWrapperRect.height;
+                let ratio;
+                if (widthOffset > heightOffset && widthOffset > 0) {
+                    ratio = imgWrapperRect.width / imgRect.width;
+                } else if (heightOffset > widthOffset && heightOffset > 0) {
+                    ratio = imgWrapperRect.height / imgRect.height;
+                } else return;
+                let newHeight = imgRect.height * ratio;
+                htmlImg.style.marginTop = `${(imgWrapperRect.height - newHeight) / 2}px`;
+    
+                htmlImg.style.transform = `scale(${ratio})`;
+                htmlImg.style.opacity = '1';
+            }, 100);
+        }
     }
 }
 
