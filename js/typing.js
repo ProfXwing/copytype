@@ -686,7 +686,9 @@ function styleWord(wordIndex = getTypedAsWords().length - 1, letterIndex) {
                 } else if (typedLetter != correctLetter && !shownLetter.hasClass("incorrect")) {
                     shownLetter.addClass("incorrect");
                     if (settings.indicateTypos == "below") {
-                        shownLetter.append(`<hint>${typedLetter}</div>`);
+                        let hint = document.createElement("hint");
+                        hint.innerHTML = typedLetter;
+                        shownLetter.append(hint);
                     } else if (settings.indicateTypos == "replace") {
                         shownLetter.text(typedLetter);
                     }
@@ -727,7 +729,9 @@ function styleWord(wordIndex = getTypedAsWords().length - 1, letterIndex) {
 
                 if (typedLetter != correctLetter) {
                     if (settings.indicateTypos == "below") {
-                        shownLetter.append(`<hint>${typedLetter}</div>`);
+                        let hint = document.createElement("hint");
+                        hint.innerHTML = typedLetter;
+                        shownLetter.append(hint);
                     } else if (settings.indicateTypos == "replace") {
                         let newLetter = typedLetter;
                         if (typedLetter instanceof WrongSpace) {
@@ -840,7 +844,13 @@ function typeKey(e) {
                     if (typed[typed.length - 1] instanceof WrongSpace) {
                         letter = "_";
                     }
-                    $(`<letter char=${letter} class="incorrect extra">${letter}</letter>`).insertAfter(currentEndLetter);
+
+                    let letterElem = document.createElement("letter");
+                    letterElem.setAttribute('char', letter);
+                    letterElem.classList.add('incorrect', 'extra')
+                    letterElem.innerHTML = letter;
+                    
+                    $(letterElem).insertAfter(currentEndLetter);
 
                     removeWordsOffScreen();
                     setPageLengths();
