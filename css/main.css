@@ -5,6 +5,7 @@
 
 :root {
     --roundness: 0.5rem;
+    --font-size: 2.3rem;
 }
 
 html {
@@ -147,9 +148,11 @@ body {
 
 #words .word {
     display: inline-block;
-    margin: .57rem;
-    line-height: 39px;
-    border-bottom: 3px solid transparent;
+    /* margin was originally 0.57rem here */
+    margin: calc(var(--font-size) * 0.57 / 2.3);
+    line-height: 1;
+    /* originally 3px */
+    border-bottom: calc(var(--font-size) * (3/16) / 2.3) solid transparent;
 
 }
 
@@ -158,9 +161,18 @@ body {
 }
 
 .error {
-    border-bottom: 3px solid var(--error-color) !important;
-    text-shadow: 2px 0 0 var(--bg-color), -2px 0 0 var(--bg-color), 0 2px 0 var(--bg-color), 2px 2px 0 var(--bg-color), -2px 2px 0 var(--bg-color);
-}
+    /* bottom border was originally 3px */
+    border-bottom: calc(var(--font-size) * (3/16) / 2.3) solid var(--error-color) !important;
+    --shadow-size: calc(var(--font-size) * 2 / 16 / 2.3);
+    /* originally 2px */
+    text-shadow: var(--shadow-size) 0 0 var(--bg-color), 
+        calc(var(--shadow-size) * -1) 0 0 var(--bg-color), 0 
+        var(--shadow-size) 0 var(--bg-color), 
+        var(--shadow-size) 
+        var(--shadow-size) 0 var(--bg-color), 
+        calc(var(--shadow-size) * -1) 
+        var(--shadow-size) 0 var(--bg-color);
+    }
 
 .book-choice {
     display: inline-block;
@@ -810,11 +822,11 @@ body {
     left: 0;
     line-height: normal;
     opacity: .5;
-    padding: 1px;
     position: absolute;
     text-align: center;
     text-shadow: none;
     width: 100%;
+    z-index: -1;
  }
 
  #caret.off {
@@ -944,4 +956,14 @@ body {
     /* margin: 0; */
     padding: 10px;
     white-space: nowrap;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+#words {
+    font-size: var(--font-size);
 }

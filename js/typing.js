@@ -182,22 +182,23 @@ function updateCaret(init = false) {
         } else {
             lastLetter = lettersList.eq(currentWordLength);
         }
-        // let lastLetter = $("#words").find("div").eq(typedWordsLength).children().eq(currentWordLength);
 
-        let charPosition = lastLetter.position(); //typed.length - 1 + getSkippedLetters()
+        let charPosition = lastLetter.position(); 
         let width = lastLetter.width()
 
         let caret = $("#caret");
+        
+        caret.css("transform", `scale(${(lastLetter[0].getBoundingClientRect().height) / 32})`);
 
         if (typed.length == 0) {
             width = 0;
             charPosition = $("#words").find("div").eq(0).children().eq(0).position();
         }
-
+        let caretWidth = caret[0].getBoundingClientRect().width / 2;
         if (settings.caretStyle == "default") {
-            caretPosX = (currentWord.length == 0) ? charPosition.left - caret.width() : charPosition.left + width;
+            caretPosX = (currentWord.length == 0) ? charPosition.left - caretWidth : charPosition.left + width - caretWidth;
         } else {
-            caretPosX = (currentWord.length == 0) ? charPosition.left : charPosition.left + width;
+            caretPosX = (currentWord.length == 0) ? charPosition.left - caretWidth : charPosition.left + width - caretWidth;
         }
 
         caretPosY = charPosition.top;
@@ -463,6 +464,7 @@ export function nextWordSet(keepCurrent = false) {
     if (settings.showPageLabel == "always on") {
         $("#chapter-label").removeClass("hide-chapter-label");
     }
+    $(":root").css("--font-size", settings.fontSize + "rem");
 
     if (!keepCurrent) {
         currentPage++;

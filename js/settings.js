@@ -6,6 +6,9 @@ import {
 } from "./typing.js";
 import { loadTheme } from './themes.js';
 
+var fontSizeInput = $(".fontSize").find("input");
+var removeFromTextInput = $(".removeFromText").find("input");
+
 loadSettings();
 
 for (let setting in settings) {
@@ -28,11 +31,29 @@ for (let setting in settings) {
 }
 
 
-let removeFromTextInput = $(".removeFromText").find("input");
-removeFromTextInput.val(settings.removeFromText.join(""));
 removeFromTextInput.on('input propertychange paste', function() {
     settings.removeFromText = $(this).val().split("");
     window.electron.saveSettings(settings);
+});
+
+// Set only if input is a valid number
+fontSizeInput.on('input propertychange paste', function() {
+    let val = $(this).val();
+    let parsedFloat = parseFloat($(this).val());
+
+    if (val == "" || isNaN(parsedFloat)) {
+        return;
+    }
+    if (isNaN(parsedFloat)) {
+        return;
+    }
+    if (parsedFloat.toString() == $(this).val() || 
+    (parsedFloat.toString() + "." == $(this).val()) && parsedFloat.toString().indexOf(".") == -1) {
+        settings.fontSize = parseFloat($(this).val());
+        window.electron.saveSettings(settings);
+    } else {
+        $(this).val(settings.fontSize);
+    }
 });
 
 $(".importexportSettings .buttons .import").click(()=>{
@@ -78,6 +99,9 @@ function loadSettings() {
         $(`.pageSettings .section.${setting} .button`).removeClass("active");
         $(`.pageSettings .section.${setting} .button[${setting}='${settings[setting]}']`).addClass("active");
     }
+    removeFromTextInput.val(settings.removeFromText.join(""));
+    fontSizeInput.val(settings.fontSize);
+
     loadTheme(settings.currentTheme)
 }
 
