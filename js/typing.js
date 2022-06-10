@@ -294,7 +294,7 @@ export async function saveTyping(stopping=true) {
     if (currentBookStats) {
         if (stopping) {stopTimer();}
         // Bookmark
-        let savedBookStats = {...currentBookStats};
+        let savedBookStats = structuredClone(currentBookStats);
         savedBookStats.typedPos = currentBookStats.typedPos + getTypedAsWords().length - 1;
         savedBookStats.wpm.correctChars = currentBookStats.wpm.correctChars + getCorrectChars();
         await window.electron.saveBookStats(savedBookStats);
