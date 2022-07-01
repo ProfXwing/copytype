@@ -90,10 +90,19 @@ async function createBook(event) {
     let coverImagePath = epubLibDir + "cover.png";
     let jsonPath = epubLibDir + "meta-data.json";
 
+    // todo: more thorough check if book is valid
     if (fs.existsSync(epubLibDir)) {
-        if (fs.existsSync(jsonPath) && fs.existsSync(coverImagePath)) {
-            event.sender.send('book-exists');
-            return;
+        if (fs.existsSync(jsonPath)) {
+            let data = getDataFromJSON(jsonPath);
+            if (data.coverImg) {
+                if (fs.existsSync(data.coverImg)) {
+                    event.sender.send('book-exists');
+                    return;
+                }
+            }  else {
+                event.sender.send('book-exists');
+                return;
+            }
         } else {
             fs.rmSync(epubLibDir, {
                 recursive: true
