@@ -1,7 +1,10 @@
 const StreamZip = require('node-stream-zip');
+// wish i didn't have to use both, but seems most optimal as of rn
 const {
     parse
 } = require("node-html-parser");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 const path = require("path");
 const fs = require('fs');
 const {
@@ -57,11 +60,10 @@ async function createBook(event) {
         if ('META-INF/encryption.xml' in await zip.entries()) {
             // check for drm
             const encryptionXML = (await zip.entryData('META-INF/encryption.xml')).toString();
-            const encryptionDoc = parse(encryptionXML);
+            const encryptionDoc = new JSDOM(encryptionXML).window.document;
 
-            // No idea why querySelector doesn't work for EncryptionMethod
-            for (let elem of encryptionDoc.querySelectorAll('*')) {
-                if (elem.rawTagName == 'EncryptionMethod' && elem.getAttribute('Algorithm') != 'http://www.idpf.org/2008/embedding') {
+            for (let elem of encryptionDoc.getElementsByTagName('encryptionmethod')) {
+                if (elem.getAttribute('Algorithm') != 'http://www.idpf.org/2008/embedding') {
                     zip.close();
                     event.sender.send("drm-error");
                     return;
@@ -116,20 +118,22 @@ async function createBook(event) {
         // TODO: Other people probably did this better. Use theirs instead.
         // Get rootfile from container xml 
         const containerXML = (await zip.entryData('META-INF/container.xml')).toString();
-        const containerDoc = parse(containerXML);
-        const opfDir = containerDoc.querySelector("rootfile").getAttribute("full-path");
+        const containerDoc = new JSDOM(containerXML).window.document;
+        const opfDir = containerDoc.getElementsByTagName("rootfile")[0].getAttribute("full-path");
 
         // Get cover file from rootfile
         const opfData = (await zip.entryData(opfDir)).toString();
-        const opfDoc = parse(opfData);
+        const opfDoc = new JSDOM(opfData).window.document;
+        
 
         let coverMeta;
-        for (let meta of opfDoc.querySelectorAll("meta")) {
+        for (let meta of opfDoc.getElementsByTagName("meta")) {
             if (meta.getAttribute("name") == "cover") {
                 coverMeta = meta.getAttribute("content");
             }
         }
-        let coverImageFile = thoroughQuery(opfDoc, coverMeta).getAttribute("href");
+
+        let coverImageFile = opfDoc.getElementById(coverMeta).getAttribute("href");
 
         // Create directory for epub data
         if (!fs.existsSync(epubLibDir)) {
@@ -143,39 +147,36 @@ async function createBook(event) {
         }
         let chapCount = 0;
         let epubText = []
-        for (let itemref of opfDoc.querySelectorAll("itemref")) {
-            if (itemref.parentNode == opfDoc.querySelector("spine")) {
-                let idref = itemref.getAttribute("idref");
-                let chapHTMLPath = thoroughQuery(opfDoc, idref).getAttribute("href");
-                let chapHTMLString = await (await zip.entryData(path.join(opfDir + `/../${chapHTMLPath}`).replace(/\\/g, "/"))).toString();
-                let chapDoc = parse(chapHTMLString);
-                let chapText = chapDoc.querySelector("body").innerText;
+        for (let itemref of opfDoc.getElementsByTagName("spine")[0].getElementsByTagName("itemref")) {
+            let idref = itemref.getAttribute("idref");
+            let chapHTMLPath = opfDoc.getElementById(idref).getAttribute("href");
+            let chapHTMLString = await (await zip.entryData(path.join(opfDir + `/../${chapHTMLPath}`).replace(/\\/g, "/"))).toString();
+            let chapDoc = parse(chapHTMLString);
+            let chapText = chapDoc.querySelector("body").innerText;
 
-                chapText = readyText(chapText);
+            chapText = readyText(chapText);
 
-                if (chapText != "") {
+            if (chapText != "") {
 
-                    let chapTextPath = chaptersDir + `${chapCount}.json`;
-                    let chapTextJson = JSON.stringify(chapText);
+                let chapTextPath = chaptersDir + `${chapCount}.json`;
+                let chapTextJson = JSON.stringify(chapText);
 
-                    fs.writeFileSync(chapTextPath, chapTextJson);
+                fs.writeFileSync(chapTextPath, chapTextJson);
 
-                    epubText.push(chapTextPath);
+                epubText.push(chapTextPath);
 
-                    chapCount++;
-                }
+                chapCount++;
             }
         }
 
         metaData = {
-            "title": opfDoc.querySelector("dc\\:title").innerText,
-            "author": opfDoc.querySelector("dc\\:creator").innerText,
-            "written": opfDoc.querySelector("dc\\:date").innerText,
+            "title": opfDoc.getElementsByTagName("dc:title")[0].textContent,
+            "author": opfDoc.getElementsByTagName("dc:creator")[0].textContent,
+            "written": opfDoc.getElementsByTagName("dc:date")[0].textContent,
             "textPath": epubText,
             "dateStarted": new Date(),
             "division": "Chapter"
         }
-
 
         // Gets a snapshot of the cover if it's xhtml or html
         let imgExt = path.extname(coverImageFile);
@@ -214,46 +215,14 @@ async function createBook(event) {
             }
 
             metaData.coverHTML = newHTML;
-
-            // decided not to use puppeteer because it's slow and large
-
-            // if (fs.existsSync('extracted')) {
-            //     fs.rmdirSync("extracted", {
-            //         recursive: true
-            //     });
-            // }
-            // fs.mkdirSync('extracted');
-            // await zip.extract(null, './extracted');
-            // await zip.close();
-
-            // event.sender.send('render-html', path.join('./extracted', `${opfDir + "/../"}`, coverImageFile).toString());
-
-            // const browser = await puppeteer.launch();
-            // const page = await browser.newPage();
-            // let coverXHTMLPath = `file://${path.resolve("./extracted")}\\${path.join(`${opfDir}/../${coverImageFile}`)}`;
-            // await page.goto(coverXHTMLPath);
-
-            // await page.setViewport({
-            //     width: 425,
-            //     height: 550,
-
-            //     // Todo: make this adjustable 
-            //     deviceScaleFactor: 8
-            // });
-
-            // await page.screenshot({
-            //     path: coverImagePath,
-            //     fullpage: true
-            // });
-            // await browser.close();
-
-            // fs.rmdirSync("extracted", {
-            //     recursive: true
-            // });
-        } else if (imgExt == ".jpg" || imgExt == ".png") {
+        } else if (['.jpg', '.png', '.jpeg'].includes(imgExt)) {
             let zippedCoverPath = path.join(opfDir + "/../" + coverImageFile);
             await zip.extract(zippedCoverPath.replace(/\\/g, "/"), coverImagePath.replace(/\\/g, "/"));
             metaData.coverImage = coverImagePath;
+        } else {
+            console.log(imgExt);
+            event.sender.send('console-log', "Cover image is not a valid image type");
+            event.sender.send("console-log", imgExt)
         }
 
         await zip.close();
@@ -269,26 +238,6 @@ async function createBook(event) {
         fs.writeFileSync(chapTextPath, chapTextJson);
 
         let epubText = [chapTextPath];
-
-        // decided not to use puppeteer because it's slow and large
-
-        // const browser = await puppeteer.launch();
-        // const page = await browser.newPage();
-        // await page.setContent(`<h1 style="text-align:center">${path.parse(epubDir).name}</h1>`);
-
-        // await page.setViewport({
-        //     width: 425,
-        //     height: 550,
-
-        //     // Todo: make this adjustable 
-        //     deviceScaleFactor: 8
-        // });
-
-        // await page.screenshot({
-        //     path: coverImagePath,
-        //     fullpage: true
-        // });
-        // await browser.close();
 
         metaData = {
             "coverHTML": `<h1>${path.parse(epubDir).name}</h1>`,
@@ -306,7 +255,6 @@ async function createBook(event) {
 
         let title = book_data.title;
         let author = book_data.author;
-
 
         metaData = {
             "title": title,
@@ -397,59 +345,6 @@ async function createBook(event) {
         if (chapHTML != "") {
             metaData.coverHTML = chapHTML;
         }
-
-        event.sender.send('console-log', textDoc.querySelector("body").innerText);
-
-
-        // let chapText = textDoc.querySelector("body").innerText;
-
-        // chapText = readyText(chapText);
-
-        // let chapTextPath, chapTextJson;
-        // if (chapText != "") {
-
-        //     chapTextPath = chaptersDir + `0.json`;
-        //     chapTextJson = JSON.stringify(chapText);
-
-        //     fs.writeFileSync(chapTextPath, chapTextJson);
-        // }
-
-
-
-        // decided not to use puppeteer 
-
-        // const browser = await puppeteer.launch();
-        // const page = await browser.newPage();
-
-        // let renderHTML = parse(html);
-        // let imgSrcs = mobi.render_to(renderHTML);
-
-        // page.setContent(html);
-        // page.evaluate((imgSrcs) => {
-        //     var imgDoms = document.querySelectorAll("img");
-        //     for (var i = 0; i < imgDoms.length; i++) {
-        //         var imgDom = imgDoms[i];
-        //         imgDom.src = imgSrcs[i];
-        //     }
-
-        // }, imgSrcs);
-
-        // await page.setViewport({
-        //     width: 425,
-        //     height: 550,
-
-        //     // Todo: make this adjustable 
-        //     deviceScaleFactor: 8
-        // });
-
-        // await page.screenshot({
-        //     path: coverImagePath,
-        //     fullpage: true
-        // });
-        // await browser.close();
-
-
-
     }
 
     let bookStats = new BookStats(path.parse(epubDir).name);
@@ -475,19 +370,6 @@ function restartBook(book) {
     bookStats.startedBook = false;
     bookStats.finishedBook = false;
     saveBookStats(bookStats);
-}
-
-// Sometimes doesn't return element from querySelector idk why
-function thoroughQuery(document, id) {
-    let item = document.querySelector("#" + id);
-    if (!item) {
-        for (let child of document.querySelectorAll("*")) {
-            if (child.id == id) {
-                item = child;
-            }
-        }
-    }
-    return item;
 }
 
 // Ready chapText for typing
