@@ -119,7 +119,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ipcRenderer.on('load-book', (event, dir) => {
         library.addLibraryBook(dir);
         stopLoading();
-    })
+    });
 
     ipcRenderer.on('remove-from-library', (event, bookName) => {
         library.removeLibraryBook(bookName);
@@ -127,7 +127,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     ipcRenderer.on('console-log', (event, ...args) => {
         console.log(...args);
-    })
+    });
+
+    ipcRenderer.on('error', (event, ...args) => {
+        console.error(...args);
+    });
 });
 
 function startLoading() {

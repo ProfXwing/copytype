@@ -142,7 +142,17 @@ async function createBook(event) {
             }
         }
 
-        let coverImageFile = opfDoc.getElementById(coverMeta).getAttribute("href");
+        let coverImageFile;
+        for (let item of opfDoc.getElementsByTagName("item")) {
+            if (item.getAttribute("id") == coverMeta || item.getAttribute("properties") == coverMeta) {
+                coverImageFile = item.getAttribute("href");
+                break;
+            }
+        }
+
+        if (!coverImageFile) {
+            ipcRenderer.send('error', 'No cover image found');
+        }
 
         // Create directory for epub data
         if (!fs.existsSync(epubLibDir)) {
@@ -161,6 +171,8 @@ async function createBook(event) {
             let chapHTMLPath = opfDoc.getElementById(idref).getAttribute("href");
             let chapHTMLString = await (await zip.entryData(path.join(opfDir + `/../${chapHTMLPath}`).replace(/\\/g, "/"))).toString();
             let chapDoc = parse(chapHTMLString);
+
+            // todo no spacing between elements. i might have to loop through each elements like in mobi
             let chapText = chapDoc.querySelector("body").innerText;
 
             chapText = readyText(chapText);
@@ -383,7 +395,9 @@ function restartBook(book) {
 
 // Ready chapText for typing
 function readyText(chapText) {
+    chapText = parseHtmlEntities(chapText);
     //--------------------Ready chapText for typing----------------------
+    chapText = chapText.replace(/[\t\r\v\f\b\0]/g, '');
     chapText = chapText.replaceAll('	', '').replaceAll(' ', '');
     chapText = removeFancyTypography(chapText);
     chapText = chapText.replace(/  +/g, ' ')
@@ -409,11 +423,17 @@ function readyText(chapText) {
     }
 
     chapText = chapText.replaceAll("\n", "\n ").replace(/  +/g, ' ')
-    chapText = chapText.replace(/[\t\r\v\f\b\0]/g, '');
     chapText = chapText.split(" ");
 
     return chapText;
     // -------------------------------------------------------------
+}
+
+function parseHtmlEntities(str) {
+    return str.replace(/&#([0-9]{1,4});/gi, function(match, numStr) {
+        var num = parseInt(numStr, 10); // read num as normal number
+        return String.fromCharCode(num);
+    });
 }
 
 async function deleteBook(event, bookName) {
@@ -507,18 +527,20 @@ function addLibraryBook(bookDir) {
         newBook.classList.add("book-choice");
         newBook.setAttribute("id", bookDir.name);
 
-
         newBook.innerHTML = `<div class="cover-img-wrapper">
                                 ${cover}
                             </div>
                             <div class="title-wrapper">
-                                <label id="book-title">${data.title}</label>
+                                <label id="book-title"></label>
                             </div>
                             <div class="book-buttons">
                                 <i class="fas fa-keyboard"></i>
                                 <i class="fas fa-chart-bar"></i>
                                 <i class="fas fa-trash-alt"></i>
                             </div>`
+        
+        newBook.querySelector("#book-title").textContent = data.title;
+        newBook.querySelector("#book-title").setAttribute('title', data.title);
 
         // TODO: book settings, cover image, title, etc.
 
@@ -541,7 +563,7 @@ function addLibraryBook(bookDir) {
         }
 
 
-        // todo: alphabetize instead
+        // todo: alphabetize instead, or sort by most recent or something, probably make that an option
         libraryElem.prepend(newBook);
 
         // Sizing only for when there isn't a cover image. Otherwise, css can handle the sizing.
@@ -556,19 +578,17 @@ function addLibraryBook(bookDir) {
             setTimeout(() => {
                 let imgRect = htmlImg.getBoundingClientRect();
                 let imgWrapperRect = libraryElem.getElementsByClassName("cover-img-wrapper")[0].getBoundingClientRect();
-    
-                let widthOffset = imgRect.width - imgWrapperRect.width;
-                let heightOffset = imgRect.height - imgWrapperRect.height;
-                let ratio;
-                if (widthOffset > heightOffset && widthOffset > 0) {
-                    ratio = imgWrapperRect.width / imgRect.width;
-                } else if (heightOffset > widthOffset && heightOffset > 0) {
-                    ratio = imgWrapperRect.height / imgRect.height;
-                } else return;
+
+                let ratio = Math.min(imgWrapperRect.width/imgRect.width, imgWrapperRect.height/imgRect.height);
+            
                 let newHeight = imgRect.height * ratio;
                 htmlImg.style.marginTop = `${(imgWrapperRect.height - newHeight) / 2}px`;
     
-                htmlImg.style.transform = `scale(${ratio})`;
+                // todo maybe actually fix scaling instead of doing this
+                if (ratio < 1) {
+                    htmlImg.style.transform = `scale(${ratio})`;
+                }
+
                 htmlImg.style.opacity = '1';
             }, 100);
         }
