@@ -1,3 +1,5 @@
+const { CustomTheme } = require("./customThemeModel");
+
 class Settings {
     constructor() {
         this.blindMode = false;
@@ -23,8 +25,11 @@ class Settings {
         this.removeCaps = false;
         this.removeNewLine = false;
 
-        this.wordCount = 150;
+        this.wordCount = 150; // todo: how many words are loaded, would be great if this was automatic 
         this.currentTheme = 'serika_dark';
+        this.themeType = 'preset'; //preset, custom
+        this.savedCustomThemes = [];
+        this.customTheme = new CustomTheme();
         this.favThemes = [];
     }
 }

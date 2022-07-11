@@ -138,92 +138,6 @@
             <div id="go-library">Go to library</div>
         </div>
 
-        <div id="delete-warning" class="hidden dialog">
-            <h1>Are you sure you want to delete <span id="book-to-delete"></span>?</h1>
-            <table class="delete-buttons">
-                <td>
-                    <div id="confirm-delete" class="dialog-button delete-button"><span>Delete</span></div>
-                </td>
-                <td>
-                    <div id="cancel-delete" class="dialog-button delete-button"><span>Cancel</span></div>
-                </td>
-            </table>
-        </div>
-
-        <div id="book-finished" class="hidden dialog">
-            <h1>Congratulations!</h1>
-            <p>You finished your book.</p>
-            <table id="end-book-buttons">
-                <td>
-                    <div id="go-library" class="dialog-button end-book-button">Library</div>
-                </td>
-                <td>
-                    <div id="book-info" class="dialog-button end-book-button">Book Stats</div>
-                </td>
-            </table>
-        </div>
-
-        <div id="book-exists" class="hidden dialog">
-            <h1>You already have a book with this title.</h1>
-            <p id="book-name"></p>
-            <table id="book-exists-buttons">
-                <td>
-                    <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
-                </td>
-                <td>
-                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
-                </td>
-            </table>
-        </div>
-
-        <div id="drm-error" class="hidden dialog">
-            <h1>Looks like that book contains DRM.</h1>
-            <a href="https://github.com/apprenticeharper/DeDRM_tools/wiki/Exactly-how-to-remove-DRM">How do I remove
-                DRM?</a>
-            <p id="book-name"></p>
-            <table id="book-exists-buttons">
-                <td>
-                    <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
-                </td>
-                <td>
-                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
-                </td>
-            </table>
-        </div>
-
-        <div id="settingsImport" class="settingsImport hidden dialog">
-            <input>
-            <div class="button">import settings</div>
-        </div>
-
-        <div id="resetSettingsDialog" class="hidden dialog">
-            <h1>Reset Settings</h1>
-            <p>Are you sure you want to reset all your settings?</p>
-            <table id="reset-settings-buttons">
-                <td>
-                    <div id="reset-settings" class="dialog-button reset-settings-button">Reset</div>
-                </td>
-                <td>
-                    <div id="cancel-dialog" class="cancel-dialog dialog-button reset-settings-button">Cancel</div>
-                </td>
-            </table>
-        </div>
-
-        <!-- todo: perhaps clear stats option or something -->
-        <div id="restart-book-dialog" class="hidden dialog">
-            <h1>You finished this book!</h1>
-            <p id="book-name"></p>
-            <table id="book-exists-buttons">
-                <td>
-                    <div id="restart-book" class="dialog-button book-exists-button">Restart</div>
-                </td>
-                <td>
-                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
-                </td>
-            </table>
-        </div>
-
-        <!-- TODO: Cover dialog -->
 
         <!-- Typing -->
         <div id="typing" class="hidden">
@@ -382,6 +296,7 @@
                         <div class="button" lazyMode="true" tabindex="0">on</div>
                     </div>
                 </div>
+                <div class="sectionSpacer"></div>
             </div>
 
             <div id="group_caret" class="sectionGroupTitle" group="caret">caret <i class="fas fa-chevron-down"></i>
@@ -441,6 +356,7 @@
                         <input>
                     </div>
                 </div>
+                <div class="sectionSpacer"></div>
             </div>
 
 
@@ -481,10 +397,132 @@
                     <div class="button" tab="custom">custom</div>
                 </div>
             </div> -->
-                <div class="themes-tab">
-                    <div class="fav-themes buttons"></div>
-                    <div class="all-themes buttons"></div>
+
+                <div class="section themes fullWidth">
+                    <h1>theme</h1>
+                    <div class="tabs">
+                        <div class="button" tab="preset" tabindex="0">preset</div>
+                        <div class="button" tab="custom" tabindex="0">custom</div>
+                    </div>
+                    <!-- found this to be completely unnecessary -->
+                    <!-- <div class="colorConverter" style="color: rgb(126, 42, 51);"></div> -->
+
+                    <div class="tabContainer">
+                        <div tabcontent="custom" class="tabContent customTheme hidden">
+                            <div class="allCustomThemes buttons"></div>
+                            <div class="customThemeEdit">
+                                <label class="colorText">background</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--bg-color-txt" />
+                                    <label for="--bg-color" class="button" style="
+                                    color: var(--text-color);
+                                    background-color: var(--sub-alt-color);
+                                    ">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--bg-color" />
+                                </div>
+                                <label class="colorText">main</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--main-color-txt" />
+                                    <label for="--main-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--main-color" />
+                                </div>
+                                <label class="colorText">caret</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--caret-color-txt" />
+                                    <label for="--caret-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--caret-color" />
+                                </div>
+                                <label class="colorText">sub</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--sub-color-txt" />
+                                    <label for="--sub-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--sub-color" />
+                                </div>
+                                <label class="colorText">sub alt</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--sub-alt-color-txt" />
+                                    <label for="--sub-alt-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--sub-alt-color" />
+                                </div>
+                                <label class="colorText">text</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--text-color-txt" />
+                                    <label for="--text-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--text-color" />
+                                </div>
+
+                                <span class="spacer"></span>
+
+                                <label class="colorText">error</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--error-color-txt" />
+                                    <label for="--error-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--error-color" />
+                                </div>
+                                <label class="colorText">extra error</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--error-extra-color-txt" />
+                                    <label for="--error-extra-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--error-extra-color" />
+                                </div>
+
+                                <p>colorful mode</p>
+
+                                <label class="colorText">error</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input" id="--colorful-error-color-txt" />
+                                    <label for="--colorful-error-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000" id="--colorful-error-color" />
+                                </div>
+
+                                <label class="colorText">extra error</label>
+                                <div class="colorPicker inputAndButton">
+                                    <input type="text" value="#000000" class="input"
+                                        id="--colorful-error-extra-color-txt" />
+                                    <label for="--colorful-error-extra-color" class="button">
+                                        <i class="fas fa-fw fa-palette"></i>
+                                    </label>
+                                    <input type="color" class="color" value="#000000"
+                                        id="--colorful-error-extra-color" />
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;grid-column:1/5;gap:.5rem">
+                                    <div class="button" id="loadCustomColorsFromPreset">load from preset</div>
+                                    <div class="button saveCustomThemeButton">save as new</div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;grid-column:1/5;gap:.5rem">
+                                    <div class="button" id="importCustomTheme">import theme</div>
+                                    <div class="button" id="exportCustomTheme">export theme</div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div tabcontent="preset" class="tabContent themes-tab">
+                            <div class="fav-themes"></div>
+                            <div class="all-themes"></div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="sectionSpacer"></div>
             </div>
 
 
@@ -524,6 +562,7 @@
                         <div class="button" capsLockWarning="true" tabindex="0">on</div>
                     </div>
                 </div>
+                <div class="sectionSpacer"></div>
             </div>
 
             <div id="group_book" class="sectionGroupTitle" group="book">book <i class="fas fa-chevron-down"></i>
@@ -575,6 +614,7 @@
                         <div class="button" redoText="true" removeNewLine="true" tabindex="0">on</div>
                     </div>
                 </div>
+                <div class="sectionSpacer"></div>
             </div>
 
 
@@ -648,7 +688,145 @@
             -->
         </div>
 
+        <!----------------------------------------- Dialogs --------------------------------------------->
+        <div id="delete-warning" class="hidden dialog">
+            <h1>Are you sure you want to delete <span id="book-to-delete"></span>?</h1>
+            <table class="delete-buttons">
+                <td>
+                    <div id="confirm-delete" class="dialog-button delete-button"><span>Delete</span></div>
+                </td>
+                <td>
+                    <div id="cancel-delete" class="dialog-button delete-button"><span>Cancel</span></div>
+                </td>
+            </table>
+        </div>
 
+        <div id="book-finished" class="hidden dialog">
+            <h1>Congratulations!</h1>
+            <p>You finished your book.</p>
+            <table id="end-book-buttons">
+                <td>
+                    <div id="go-library" class="dialog-button end-book-button">Library</div>
+                </td>
+                <td>
+                    <div id="book-info" class="dialog-button end-book-button">Book Stats</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="book-exists" class="hidden dialog">
+            <h1>You already have a book with this title.</h1>
+            <p id="book-name"></p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="drm-error" class="hidden dialog">
+            <h1>Looks like that book contains DRM.</h1>
+            <a href="https://github.com/apprenticeharper/DeDRM_tools/wiki/Exactly-how-to-remove-DRM">How do I remove
+                DRM?</a>
+            <p id="book-name"></p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="choose-book" class="dialog-button book-exists-button">Choose Book</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="settingsImport" class="settingsImport hidden dialog">
+            <input>
+            <div class="button">import settings</div>
+        </div>
+
+        <div id="resetSettingsDialog" class="hidden dialog">
+            <h1>Reset Settings</h1>
+            <p>Are you sure you want to reset all your settings?</p>
+            <table id="reset-settings-buttons">
+                <td>
+                    <div id="reset-settings" class="dialog-button reset-settings-button">Reset</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button reset-settings-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <!-- todo: perhaps clear stats option or something -->
+        <div id="restart-book-dialog" class="hidden dialog">
+            <h1>You finished this book!</h1>
+            <p id="book-name"></p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="restart-book" class="dialog-button book-exists-button">Restart</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="delete-theme-dialog" class="hidden dialog">
+            <h1>Delete Custom Theme</h1>
+            <p>Are you sure?</p>
+            <table id="book-exists-buttons">
+                <td>
+                    <div id="delete-theme" class="dialog-button book-exists-button">Delete</div>
+                </td>
+                <td>
+                    <div id="cancel-dialog" class="cancel-dialog dialog-button book-exists-button">Cancel</div>
+                </td>
+            </table>
+        </div>
+
+        <div id="update-theme-dialog" class="hidden dialog">
+            <h1>Update Custom Theme</h1>
+            <input type="text">
+            <br>
+            <label class="checkbox">
+                <input type="checkbox">
+                <div class="visible-container">
+                    <div class="customTextCheckbox">
+                        <div class="check">
+                            <i class="fas fa-fw fa-check"></i>
+                        </div>
+                    </div>
+                    <div class="text-container">
+                        <span>Update custom theme to current colors</span>
+                    </div>
+                </div>
+            </label>
+
+            <div class="dialog-button" id="update-theme">Update</div>
+        </div>
+
+        <div id="themeImport" class="settingsImport hidden dialog">
+            <input>
+            <div class="button">import theme</div>
+        </div>
+
+
+
+
+
+        <!-- TODO: Cover dialog -->
+        <!------------------------------------------------------------------------------------------------------>
+
+    </div>
+    <div id="notificationCenter">
+        <div class="history">
+        </div>
+    </div>
 </body>
+
+
 
 </html>

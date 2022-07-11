@@ -786,7 +786,7 @@ body {
     place-content: center center;
  }
 
- .pageSettings .section .text {
+ .pageSettings .section>.text {
     font-size:1.5rem;
     align-self: normal;
     color: var(--text-color);
@@ -966,4 +966,314 @@ input[type=number]::-webkit-outer-spin-button {
 
 #words {
     font-size: var(--font-size);
+}
+
+.pageSettings .section.fullWidth {
+    column-gap: 2rem;
+    grid-template-areas: "title tabs" "text text" "buttons buttons";
+    grid-template-columns: 2fr 1fr;
+}
+
+.pageSettings .section.themes .tabs {
+    display: grid;
+    gap: .5rem;
+    grid-area: tabs;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+}
+
+.pageSettings .section.themes .tabContainer {
+    grid-area: buttons;
+    position: relative;
+}
+
+.pageSettings .section.themes .tabContainer .tabContent.customTheme {
+    grid-template-columns: 1fr;
+    margin-top: 1rem;
+}
+
+.pageSettings .section.themes .tabContainer .tabContent {
+    height: auto;
+    overflow: revert;
+}
+
+.customThemeEdit {
+    font-size: 1.5rem;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    justify-items: stretch;
+    gap: 1rem 2rem;
+}
+.customThemeEdit input {
+    width: 100%;
+    font-size: inherit;
+}
+.customThemeEdit label {
+    display: grid;
+    place-content: center start;
+}
+.customThemeEdit p {
+    grid-area: unset;
+    grid-column: 1 / span 4;
+}
+.customThemeEdit .spacer {
+    grid-column: 3/5;
+    height: 20px;
+}
+
+.inputAndButton {
+    display: grid;
+    grid-template-columns: 8fr 1fr;
+    gap: 2rem;
+    margin-bottom: 0.5rem;
+}
+.inputAndButton .button {
+    height: auto;
+}
+.inputAndButton .button .fas {
+    margin-right: 0rem;
+    vertical-align: sub;
+}
+
+.colorText {
+    color: var(--text-color);
+}
+
+
+input[type=color] {
+    height: 3px;
+    margin: 0;
+    opacity: 0;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 0;
+}
+
+
+
+.pageSettings .section.themes .tabContainer [tabcontent=custom] label.button {
+    color: var(--bg-color);
+}
+
+.allCustomThemes.buttons {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    margin-bottom: 1rem !important;
+}
+
+.customTheme.button .delButton, .customTheme.button .editButton {
+    transition: 0.25s;
+    opacity: 0;
+}
+.customTheme.button .delButton .far, .customTheme.button .editButton .far, .customTheme.button .delButton .fas, .customTheme.button .editButton .fas {
+    margin: 0;
+    pointer-events: none;
+}
+.customTheme.button .delButton:hover, .customTheme.button .editButton:hover {
+    cursor: pointer;
+}
+.customTheme.button .delButton.active, .customTheme.button .editButton.active {
+    opacity: 1;
+}
+.customTheme.button:hover {
+    transform: scale(1.1);
+}
+.customTheme.button:hover .editButton {
+    opacity: 1;
+}
+.customTheme.button:hover .delButton {
+    opacity: 1;
+}
+.customTheme.button, .theme.button {
+    transition: 0.125s;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    height: calc(50px - 1.6rem);
+}
+.customTheme.button .text, .theme.button .text {
+    color: inherit;
+}
+
+.cusotmTheme.button .text {
+    overflow: hidden;
+}
+
+.customTheme.button .activeIndicator, .theme.button .activeIndicator {
+    transition: 0.25s;
+    opacity: 0;
+    color: inherit;
+}
+.customTheme.button .activeIndicator .far, .theme.button .activeIndicator .far {
+    margin: 0;
+}
+.customTheme.button .activeIndicator.active, .theme.button .activeIndicator.active {
+    opacity: 1;
+}
+.customTheme.button.active .activeIndicator, .theme.button.active .activeIndicator {
+    opacity: 1;
+}
+
+.fullWidth .buttons  {
+    margin-left: 0 !important; 
+    grid-auto-flow: dense !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 1.4rem !important;
+    margin-top: 1rem !important;
+}
+
+#delete-theme-dialog h1 {
+    font-size: 3.5rem;
+}
+
+label.checkbox input {
+    margin: 0 !important;
+    cursor: pointer;
+    width: 0;
+    height: 0;
+    display: none;
+    user-select: none;
+}
+label.checkbox input ~ .visible-container {
+    display: grid;
+    grid-auto-flow: column;
+    gap: 1.5rem;
+    margin-bottom: 30px;
+}
+label.checkbox input ~ .visible-container .customTextCheckbox {
+    background: var(--sub-alt-color);
+    border-radius: calc(var(--roundness) / 2);
+    display: inline-grid;
+    user-select: none;
+    cursor: pointer;
+    height: 46px;
+    margin-top: 2px;
+}
+label.checkbox input ~ .visible-container .customTextCheckbox .check {
+    opacity: 0;
+    color: var(--main-color);
+    transition: 0.125s;
+}
+label.checkbox input:checked ~ .visible-container .customTextCheckbox .check {
+    opacity: 1;
+}
+
+label.checkbox .text-container {
+    display: inline;
+    text-align: left;
+    font-size: 2rem;
+}
+
+#update-theme-dialog > input {
+    width: calc(100% - 1rem);
+    margin-bottom: 30px;
+}
+
+#update-theme-dialog h1 {
+    font-size: 3.5rem;
+    margin: 0;
+    margin-bottom: 2rem;
+}
+
+#notificationCenter, #notificationCenter .history {
+    display: grid;
+    gap: 1rem;
+}
+
+#notificationCenter {
+    position: fixed;
+    right: 1rem;
+    top: 1rem;
+    width: 40%;
+    z-index: 99999999;
+}
+
+#notificationCenter .notif {
+    background: var(--sub-color);
+    border-radius: var(--roundness);
+    border-width: .25rem;
+    color: var(--bg-color);
+    display: grid;
+    grid-template-columns: min-content auto min-content;
+    position: relative;
+    user-select: none;
+    transition: 500s;
+    animation-name: slow-show-animation;
+    animation-duration: 0.25s;
+}
+
+#notificationCenter .notif .icon {
+    align-items: center;
+    color: var(--bg-color);
+    display: grid;
+    font-size: 2rem;
+    opacity: .5;
+    padding: 1rem;
+}
+
+#notificationCenter .notif .message {
+    padding: 1rem 1rem 1rem 0;
+    font-size: 1.75rem;
+}
+
+#notificationCenter .notif .message .title {
+    color: var(--bg-color);
+    font-size: .75em;
+    line-height: .75rem;
+    opacity: .5;
+}
+
+@keyframes slow-hide-animation {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slow-show-animation {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.slow-hide {
+    animation-name: slow-hide-animation !important;
+    animation-duration: 0.25s !important;
+    opacity: 0;
+}
+
+#notificationCenter .notif:hover {
+    cursor: pointer;
+}
+
+#notificationCenter .notif:hover:after {
+    opacity: 1;
+}
+
+#notificationCenter .notif:after, .popupWrapper {
+    align-items: center;
+    display: grid;
+    height: 100%;
+    width: 100%;
+}
+
+#notificationCenter .notif:after {
+    background: rgba(0,0,0,.5);
+    border-radius: var(--roundness);
+    color: var(--bg-color);
+    content: "";
+    font-family: Font Awesome\ 5 Free;
+    font-size: 3.5rem;
+    font-weight: 900;
+    opacity: 0;
+    position: absolute;
+    text-align: center;
+    transition: .125s;
 }

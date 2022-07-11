@@ -141,6 +141,18 @@ export function loadTheme(theme) {
     headScript.replaceWith(link);
 }
 
+export function loadCustomTheme() {
+    for (let setting in settings.customTheme.styles) {
+        if (setting != '--bg-color') {
+            $('.customThemeEdit').find(`[for='${setting}']`).css('background-color', settings.customTheme.styles[setting]);
+        }
+
+        $('.customThemeEdit').find('#' + setting + "-txt").val(settings.customTheme.styles[setting]);
+        $('.customThemeEdit').find('#' + setting).val(settings.customTheme.styles[setting]);
+        $(':root').css(setting, settings.customTheme.styles[setting]);
+    }
+}
+
 
 // Thanks Mio :blush:
 function hexToHSL(hex) {
@@ -193,3 +205,18 @@ function hexToHSL(hex) {
         string: "hsl(" + h + "," + s + "%," + l + "%)",
     };
 }
+
+export function convertRGBtoHEX(rgb) {
+    const match = rgb.match(
+      /^rgb\((\d+), \s*(\d+), \s*(\d+)\)$/
+    );
+    if (match === null) return;
+    if (match.length < 3) return;
+    function hexCode(i) {
+      // Take the last 2 characters and convert
+      // them to Hexadecimal.
+  
+      return ("0" + parseInt(i).toString(16)).slice(-2);
+    }
+    return "#" + hexCode(match[1]) + hexCode(match[2]) + hexCode(match[3]);
+  }

@@ -6,6 +6,8 @@ import {
 
 var bookToDelete;
 var bookToRestart;
+export var themeToDelete;
+export var themeToUpdate;
 
 // limitation of one dialog at a time, can change if needed.
 var currentDialog;
@@ -54,4 +56,15 @@ export function tryHideDialog() {
         return;
     }
     hideDialog();
+}
+
+export function deleteThemeDialog(themeIndex) {
+    themeToDelete = themeIndex;
+    showDialog("delete-theme-dialog");
+}
+
+export function updateThemeDialog(index, name) {
+    themeToUpdate = index;
+    $('#update-theme-dialog [type="text"]').val(name);
+    showDialog("update-theme-dialog");
 }
