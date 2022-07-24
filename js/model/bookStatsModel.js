@@ -1,5 +1,5 @@
 class BookStats { 
-    constructor(bookName) {
+    constructor(bookName = "") {
         this.bookName = bookName;
         this.chapter = 0;
         this.typedPos = 0; // pos in chapter

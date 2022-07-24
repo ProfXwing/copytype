@@ -31,6 +31,9 @@ class Settings {
         this.savedCustomThemes = [];
         this.customTheme = new CustomTheme();
         this.favThemes = [];
+
+        this.bookSort = 'recent' // recent, alphabetical
+        this.recentBooks = []; 
     }
 }
 exports.Settings = Settings;

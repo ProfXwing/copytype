@@ -9,13 +9,16 @@ import {
     confirmRestart
 } from './dialogs.js';
 import { loadStats } from './stats.js';
+import { pauseTimer } from './timer.js';
 import {
     initTyping,
     switchContent,
     continueTyping,
     saveTyping,
-    nextButton,
-    prevButton,
+    prevPage,
+    prevChapter,
+    nextPage,
+    nextChapter,
     currentBookStats,
     stopTyping,
 } from './typing.js';
@@ -54,18 +57,27 @@ $("#book-finished").find("#book-info").click(() => {
     loadStats(currentBookStats.bookName);
     stopTyping();
     hideDialog();
-})
+});
 
+$("#chap-prev").click(function () {
+    prevChapter();
+    $(this).blur();
+});
 
 $("#page-prev").click(function () {
-    prevButton();
+    prevPage();
     $(this).blur();
-})
+});
 
 $("#page-next").click(function () {
-    nextButton();
+    nextPage();
     $(this).blur();
-})
+});
+
+$("#chap-next").click(function () {
+    nextChapter();
+    $(this).blur();
+});
 
 $("#cancel-delete").click(hideDialog);
 $("#confirm-delete").click(confirmDelete)
@@ -88,6 +100,9 @@ $("#restart-book-dialog").find("#restart-book").click(() => {
     confirmRestart();
 });
 
+$("#play-pause-button").click(function () {
+    pauseTimer();
+});
 
 window.electron.handleInitTyping(initTyping);
 window.electron.handleSaveTyping(saveTyping);

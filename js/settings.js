@@ -2,7 +2,8 @@ import { showDialog, hideDialog, deleteThemeDialog, themeToDelete, updateThemeDi
 import {
     currentBookStats,
     settings,
-    saveAndReload
+    saveAndReload,
+    loadLibrary
 } from "./typing.js";
 import { loadCustomTheme, loadTheme } from './themes.js';
 import { normalizeText } from "./misc.js";
@@ -25,6 +26,15 @@ for (let setting in settings) {
             saveAndReload();
         }
 
+        if ($(this).attr('redoLibrary') == 'true') {
+            for (let child of $("#library").children()) {
+                if (child.id != 'new-book') {
+                    $(child).remove();
+                }
+            }
+            loadLibrary();
+        }
+
         $(`.pageSettings .section.${setting} .button`).removeClass("active");
         $(this).addClass("active");
         $(this).blur()
@@ -35,6 +45,7 @@ for (let setting in settings) {
 removeFromTextInput.on('input propertychange paste', function() {
     settings.removeFromText = $(this).val().split("");
     window.electron.saveSettings(settings);
+    saveAndReload();
 });
 
 // Set only if input is a valid number
@@ -163,8 +174,10 @@ $("#themeImport .button").click(function () {
 
 function loadSettings() {
     for (let setting in settings) {
-        $(`.pageSettings .section.${setting} .button`).removeClass("active");
-        $(`.pageSettings .section.${setting} .button[${setting}='${settings[setting]}']`).addClass("active");
+        if (typeof settings[setting] == "boolean" || typeof settings[setting] == "string") {
+            $(`.pageSettings .section.${setting} .button`).removeClass("active");
+            $(`.pageSettings .section.${setting} .button[${setting}='${settings[setting]}']`).addClass("active");
+        }
     }
     removeFromTextInput.val(settings.removeFromText.join(""));
     fontSizeInput.val(settings.fontSize);

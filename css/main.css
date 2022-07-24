@@ -176,6 +176,7 @@ body {
 
 .book-choice {
     display: inline-block;
+    margin: auto;
     margin-bottom: 20px;
     width: 300px;
     padding: 0 10px;
@@ -213,6 +214,8 @@ body {
 #library {
     width: 100%;
     margin-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
 ::-webkit-scrollbar {
@@ -377,8 +380,16 @@ body {
     background: rgba(0, 0, 0, .2)
 }
 
-#page-prev {
+#chap-prev {
     margin-right: 30px;
+}
+
+#chap-next {
+    margin-left: 30px;
+}
+
+#page-prev {
+    margin-right: 10px;
 }
 
 #page-selectors div span {
@@ -838,7 +849,8 @@ body {
  }
 
  #caret.default {
-     width: 3px;
+     width: 0.08em;
+     height: 0.87em;
  }
 
  #caret.block, #caret.outline {
@@ -848,9 +860,11 @@ body {
 
  #caret.block {
     width: 0.4em;
+    height: 0.87em;
  }
  #caret.outline {
     width: 0.39em;
+    height: 0.87em;
  }
 
  #caret.outline {
@@ -858,8 +872,9 @@ body {
     border: 1px solid var(--caret-color);
  }
 
+
  #caret.underline {
-    height: 2px;
+    height: 0.07em;
     margin-top: 1.3em;
     width: .4em;
  }
@@ -1280,4 +1295,25 @@ label.checkbox .text-container {
     position: absolute;
     text-align: center;
     transition: .125s;
+}
+
+#pause-menu {
+    position: fixed;
+    right: 30px;
+    bottom: 20px;
+    background: var(--sub-color);
+    color: var(--bg-color);
+    padding: 5px 10px;
+    border-radius: 20px;
+    direction: rtl;
+    white-space: nowrap;
+}
+
+#play-pause-button {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.disable-select * {
+    user-select: none;
 }

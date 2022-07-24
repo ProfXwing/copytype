@@ -90,27 +90,20 @@ async function createBook(event) {
     let coverImagePath = epubLibDir + "cover.png";
     let jsonPath = epubLibDir + "meta-data.json";
 
-    // todo: more thorough check if book is valid
-    if (fs.existsSync(epubLibDir)) {
-        if (fs.existsSync(jsonPath)) {
-            let data = getDataFromJSON(jsonPath);
-            if (data.coverImg) {
-                if (fs.existsSync(data.coverImg)) {
-                    event.sender.send('book-exists');
-                    return;
-                }
-            }  else {
-                event.sender.send('book-exists');
-                return;
-            }
-        } else {
-            fs.rmSync(epubLibDir, {
-                recursive: true
-            });
+    event.sender.send('start-loading');
+
+    let existingBook = await bookExists(path.parse(epubDir).name, event);
+    if (existingBook == false) {
+        if (fs.existsSync(epubLibDir)) {
+            fs.rmdirSync(epubLibDir, { recursive: true });
+            event.sender.send("remove-from-library", path.parse(epubDir).name);
         }
+    } else {
+        event.sender.send('book-exists');
+        event.sender.send("stop-loading");
+        return;
     }
 
-    event.sender.send('start-loading');
 
     // Create directory for epub data
     if (!fs.existsSync(epubLibDir)) {
@@ -261,6 +254,7 @@ async function createBook(event) {
         let epubText = [chapTextPath];
 
         metaData = {
+            // todo: better txt images somehow
             "coverHTML": `<h1>${path.parse(epubDir).name}</h1>`,
             "coverStyle": [
                 ["text-align", "center"]
@@ -374,7 +368,92 @@ async function createBook(event) {
     let dataJSON = JSON.stringify(metaData);
     fs.writeFileSync(jsonPath, dataJSON);
 
+    let settings = getSettings();
+    settings.recentBooks.unshift(metaData.title);
+    saveSettings(settings);
+
     return path.parse(epubDir);
+}
+
+// todo: modularize book creation for fixing broken books
+// todo: use this function at start up to validate all books once modularized
+// Checks if the book exists and is valid
+async function bookExists(bookName, event) {
+    let epubLibDir = `library/${bookName}/`
+    let jsonPath = epubLibDir + "meta-data.json";
+
+    let existingBook = true;
+    if (fs.existsSync(epubLibDir)) {
+        if (fs.existsSync(jsonPath)) {
+            let data = getDataFromJSON(jsonPath);
+    
+            // Checks existence of cover image
+            if (data.coverImage) {
+                if (!fs.existsSync(data.coverImage)) {
+                    event.sender.send('error', "Book already exists, but cover image is missing. Deleting...");
+                    existingBook = false;
+                }
+
+            // Checks existence of cover html
+            } else if (!data.coverHTML) {
+                event.sender.send('error', "Book already exists, but cover is missing. Deleting...");
+                existingBook = false;
+            }
+    
+            // Checks existence of meta data (title, date started, division type)
+            if (data.title == undefined || data.dateStarted == undefined || data.division == undefined) {
+                event.sender.send('error', "Book already exists, but necessary meta data (title, date started, division) is missing. Deleting...");
+                existingBook = false;
+            }
+    
+            // Checks existence of chapters
+            if (data.textPath) {
+                for (let path of data.textPath) {
+                    if (!fs.existsSync(path)) {
+                        event.sender.send('error', `Book already exists, but text path ${path} not found. Deleting...`);
+                        existingBook = false;
+                    }
+                }
+            } else {
+                event.sender.send('error', "Book already exists, but text paths are missing. Deleting...");
+                existingBook = false;
+            }
+        // checks existence of json file
+        } else {
+            event.sender.send('error', "Book already exists, but book data not found. Deleting...");
+            existingBook = false;
+        }
+    
+        if (fs.existsSync(epubLibDir + "typing-stats.json")) {
+            let bookStats = getDataFromJSON(epubLibDir + "typing-stats.json");
+
+            // Ensures existence of top-level keys in book stats
+            // todo: iterate through entire tree of keys
+            for (let key in new BookStats()) {
+                if (bookStats[key] == undefined) {
+                    event.sender.send('error', `Book stats missing key: ${key} \nAdding missing key...`);
+                    if (key == "bookName") {
+                        bookStats[key] = path.parse(epubDir).name;   
+                    } else {
+                        bookStats[key] = new BookStats()[key];
+                    }
+                }
+            }
+            await saveBookStats(bookStats);
+
+        // Checks existence of typing stats
+        } else {
+            event.sender.send('error', "Book stats not found. Creating...");
+            let bookStats = new BookStats(path.parse(epubDir).name);
+            await saveBookStats(bookStats);
+        }
+    
+    // New book!
+    } else {
+        existingBook = false;
+    }
+
+    return existingBook;
 }
 
 function restartBook(book) {
@@ -395,8 +474,13 @@ function restartBook(book) {
 
 // Ready chapText for typing
 function readyText(chapText) {
-    chapText = parseHtmlEntities(chapText);
     //--------------------Ready chapText for typing----------------------
+
+    // TODO remove more invisible characters
+    // Removes invisible space character.
+    chapText = chapText.replace(/\ufeff/g, "");
+
+    chapText = parseHtmlEntities(chapText);
     chapText = chapText.replace(/[\t\r\v\f\b\0]/g, '');
     chapText = chapText.replaceAll('	', '').replaceAll(' ', '');
     chapText = removeFancyTypography(chapText);
@@ -438,6 +522,14 @@ function parseHtmlEntities(str) {
 
 async function deleteBook(event, bookName) {
     event.sender.send("start-loading");
+    let data = getBookData(bookName);
+    let settings = getSettings();
+
+    if (settings.recentBooks.includes(data.title)) {
+        settings.recentBooks.splice(settings.recentBooks.indexOf(data.title), 1);
+        saveSettings(settings);
+    }
+    
     let path = `library/${bookName}`;
     if (fs.existsSync(path)) {
         fs.rmSync(path, {
@@ -480,6 +572,7 @@ function getSettings() {
 function saveSettings(settings) {
     let settingsJSON = JSON.stringify(settings);
     fs.writeFileSync("./settings.json", settingsJSON)
+    //todo: send message to main window to update settings
 }
 
 function defaultSettings() {
@@ -488,14 +581,34 @@ function defaultSettings() {
     return settings;
 }
 
+function insertBookAtIndex(newBook, libraryElem, index) {
+    if (index >= libraryElem.children.length - 1) {
+        libraryElem.insertBefore(newBook, libraryElem.querySelector('#new-book'));
+    } else {
+        libraryElem.insertBefore(newBook, libraryElem.children[index]);
+    }
+}
+
 // Gets all books previously added and adds them to library
-// todo: alphabetize
 async function loadLibrary() {
     let dir = await fs.promises.opendir('library/')
+
+    let titles = [];
     for await (const child of dir) {
-        if (child.isDirectory())
+        if (child.isDirectory()) {
+            titles.push(getBookData(child.name).title);
             addLibraryBook(child);
+        }
     }
+
+    let settings = getSettings();
+
+    for (let book of structuredClone(settings.recentBooks)) {
+        if (!titles.includes(book)) {
+            settings.recentBooks.splice(settings.recentBooks.indexOf(book), 1);
+        }
+    }
+    saveSettings(settings);
 }
 
 // Add book to library from path
@@ -545,6 +658,14 @@ function addLibraryBook(bookDir) {
         // TODO: book settings, cover image, title, etc.
 
         newBook.querySelector('.fa-keyboard').onclick = () => {
+            let settings = getSettings();
+            if (settings.recentBooks.includes(data.title)) {
+                settings.recentBooks.splice(settings.recentBooks.indexOf(data.title), 1);
+            }
+            settings.recentBooks.unshift(data.title);
+            saveSettings(settings);
+    
+            libraryElem.children[0].before(newBook);
             ipcRenderer.send('init-typing', bookDir.name)
         }
 
@@ -562,16 +683,49 @@ function addLibraryBook(bookDir) {
             }
         }
 
+        let bookNames = [];
+        for (let child of libraryElem.children) {
+            if (!child.classList.contains('new-book-container')) {
+                bookNames.push(child.querySelector("#book-title").textContent);
+            }
+        }
 
-        // todo: alphabetize instead, or sort by most recent or something, probably make that an option
-        libraryElem.prepend(newBook);
+        bookNames.push(data.title);
+
+        let settings = getSettings();
+        
+        if (settings.bookSort != "alphabetical" && settings.bookSort != "recent") {
+            settings.bookSort = "recent";
+            saveSettings(settings);
+        }
+
+        // sort alphabetically by title
+        if (settings.bookSort == 'alphabetical') {
+            bookNames.sort((a, b) => a.localeCompare(b));
+
+            let index = bookNames.indexOf(data.title);
+            insertBookAtIndex(newBook, libraryElem, index);
+
+        // sorts by most recent book typed
+        } else if (settings.bookSort == 'recent') {
+            for (let name of bookNames) {
+                if (!settings.recentBooks.includes(name)) {
+                    settings.recentBooks.push(name);
+                }
+            }
+
+            bookNames.sort((a, b) => {
+                return settings.recentBooks.indexOf(a) - settings.recentBooks.indexOf(b);
+            });
+            let index = bookNames.indexOf(data.title);
+            insertBookAtIndex(newBook, libraryElem, index); 
+        }
 
         // Sizing only for when there isn't a cover image. Otherwise, css can handle the sizing.
         // poorly named, oops
         if (data.coverHTML) {
             let htmlImg = newBook.querySelector('.html-img');
             htmlImg.style.opacity = 0;
-            
     
             // set size after 0.1s to allow for image to load, 
             // would love for it to load when the div is ready, but idk how
@@ -597,14 +751,10 @@ function addLibraryBook(bookDir) {
 
 function removeLibraryBook(bookName) {
     let bookDiv = document.getElementById(bookName);
-    bookDiv.parentNode.removeChild(bookDiv);
+    if (bookDiv) {
+        bookDiv.parentNode.removeChild(bookDiv);
+    }
 }
-
-
-// saveSettings({
-//     smoothCaret: true,
-//     wordCount: 150,
-// })
 
 exports.createBook = createBook;
 exports.getDataFromJSON = getDataFromJSON;

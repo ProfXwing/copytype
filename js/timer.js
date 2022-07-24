@@ -6,6 +6,7 @@ import {
 
 var startTime;
 export var timerStarted = false;
+var timeLastPressed;
 
 export function updateStats() {
     if (currentBookStats) {
@@ -57,12 +58,42 @@ export function stopTimer(timeRemoved=0) {
     if (timerStarted) {
         currentBookStats.wpm.timeTyping += Date.now() - startTime - timeRemoved;
         timerStarted = false;
+        playPauseToggle();  
     }
 }
 
 export function startTimer() {
     if (!timerStarted) {
         startTime = Date.now();
+        timeLastPressed = Date.now();
         timerStarted = true;
+        playPauseToggle();
+    }
+}
+
+export function setLastPressed() {
+    timeLastPressed = Date.now();
+}
+
+export function pauseTimer() {
+    if (timerStarted) {
+        stopTimer(Date.now() - timeLastPressed);
+    } else {
+        startTimer();
+    }
+    playPauseToggle();
+}
+
+export function playPauseToggle() {
+    if (timerStarted) {
+        $("#play-pause-button").find("i").removeClass("fa-circle-play").addClass("fa-circle-pause");
+        $("#pause-menu").animate({
+            width: "37px"
+        }, 200);
+    } else {
+        $("#play-pause-button").find("i").removeClass("fa-circle-pause").addClass("fa-circle-play");
+        $("#pause-menu").animate({
+            width: "191.4px"
+        }, 200);
     }
 }

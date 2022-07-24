@@ -4,8 +4,8 @@
 <head id="head">
     <meta charset="UTF-8">
     <title>copytype</title>
-    <link id="current-theme" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
+    <link id="current-theme" rel="stylesheet">
     <link href="fontawesome/css/all.css" rel="stylesheet" />
     <script src="js/jquery.js"></script>
     <script type="module" src="js/typing.js"></script>
@@ -145,10 +145,25 @@
             <label id="chapter-label" class="hide-chapter-label"></label>
             <br>
             <div id="page-selectors" class="hidden">
+                <div tabindex="0" id="chap-prev">
+                    <span>
+                        <<
+                    </span>
+                </div>
                 <div tabindex="0" id="page-prev">
                     <span>
-                        <</span> </div> <div tabindex="0" id="page-next">
-                            <span>></span>
+                        <
+                    </span> 
+                </div> 
+                <div tabindex="0" id="page-next">
+                    <span>
+                        >
+                    </span>
+                </div>
+                <div tabindex="0" id="chap-next">
+                    <span>
+                        >>
+                    </span>
                 </div>
             </div>
 
@@ -157,6 +172,13 @@
                 <td id="acc-counter" class="hidden"></td>
             </table>
             <div id="words"></div>
+
+            <div id="pause-menu" class="hidden disable-select">
+                <div id="play-pause-button">
+                    <i class="fas fa-circle-play"></i>
+                </div>
+                <span>Paused</span>
+            </div>
         </div>
 
         <!-- Stats -->
@@ -614,8 +636,19 @@
                         <div class="button" redoText="true" removeNewLine="true" tabindex="0">on</div>
                     </div>
                 </div>
+
+                <div class="section bookSort">
+                    <h1>library sort</h1>
+                    <div class="text">Changes the order in which your library is sorted.</div>
+                    <div class="buttons">
+                        <div class="button" redoLibrary="true" bookSort="alphabetical" tabindex="0">alphabetical</div>
+                        <div class="button" redoLibrary="true" bookSort="recent" tabindex="0">recent</div>
+                    </div>
+                </div>
+
                 <div class="sectionSpacer"></div>
             </div>
+
 
 
 

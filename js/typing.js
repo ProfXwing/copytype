@@ -7,7 +7,8 @@ import {
     startTimer,
     stopTimer,
     updateStats,
-    timerStarted
+    timerStarted,
+    setLastPressed
 } from "./timer.js";
 
 document.addEventListener('keypress', typeKey);
@@ -102,12 +103,9 @@ if (settings.currentBook) {
 window.onload = function () {
     $("#main-page").removeClass("hidden");
 
-    // For easier refreshing
-    // initTyping("Great_Expectations/chapters/2.json");
     if (settings.currentBook) {
         switchContent("#typing");
         nextWordSet(true);
-
     } else {
         switchContent("#library");
     }
@@ -127,6 +125,10 @@ export function switchContent(div) {
         libraryLoaded = true;
         window.electron.loadLibrary();
     }
+}
+
+export function loadLibrary() {
+    libraryLoaded = false;
 }
 
 function getShownWordText(index) {
@@ -188,8 +190,6 @@ function updateCaret(init = false) {
 
         let caret = $("#caret");
         
-        caret.css("transform", `scale(${(lastLetter[0].getBoundingClientRect().height) / 32})`);
-
         if (typed.length == 0) {
             width = 0;
             charPosition = $("#words").find("div").eq(0).children().eq(0).position();
@@ -198,7 +198,7 @@ function updateCaret(init = false) {
         if (settings.caretStyle == "default") {
             caretPosX = (currentWord.length == 0) ? charPosition.left - caretWidth : charPosition.left + width - caretWidth;
         } else {
-            caretPosX = (currentWord.length == 0) ? charPosition.left - caretWidth : charPosition.left + width - caretWidth;
+            caretPosX = (currentWord.length == 0) ? charPosition.left: charPosition.left + width;
         }
 
         caretPosY = charPosition.top;
@@ -215,8 +215,6 @@ function updateCaret(init = false) {
                 top: caretPosY
             }, duration);
         }
-
-
     }
 }
 
@@ -228,6 +226,7 @@ export function stopTyping() {
     $("#wpm-counter").addClass("hidden");
     $("#acc-counter").addClass("hidden");
     $("#page-selectors").addClass('hidden');
+    $("#pause-menu").addClass('hidden');
     $("#chapter-label").addClass("hide-chapter-label")
     $("#words").empty();
 
@@ -240,22 +239,26 @@ export function stopTyping() {
 
 // Initializes typing screen
 export function initTyping(book) {
-    currentBookStats = window.electron.getBookStats(book);
-
-    if (currentBookStats.finishedBook) {
+    settings = window.electron.getSettings();
+    if (window.electron.getBookStats(book).finishedBook) {
         $("#restart-book").ready(() => {
             tryRestartBook(book);
         })
     } else {
-        settings.currentBook = book;
-        window.electron.saveSettings(settings);
-    
         // saves in case another book is loaded
         saveTyping();
-    
+ 
+        currentBookStats = window.electron.getBookStats(book);
+
         $("#page-selectors").removeClass('hidden');
-    
+        if (true) {//settings.showPauseMenu
+            $("#pause-menu").removeClass('hidden');
+        }
+
         currentBookData = window.electron.getBookData(book);
+
+        settings.currentBook = book;
+        window.electron.saveSettings(settings);
     
         if (!currentBookStats.startedBook && settings.showPageLabel != 'off') {
             $("#chapter-label").removeClass("hide-chapter-label");
@@ -327,29 +330,38 @@ function changeDivisionText() {
     }
 }
 
-export function prevButton() {
-    if (!currentBookStats.startedBook) {
-        if (currentBookStats.chapter > 0) {
-            currentBookStats.chapter--;
-            changeDivisionText();
-            readyFullText();
-            nextWordSet(true);
-        }
-    } else prevWordSet();
+export function prevChapter() {
+    if (currentBookStats.chapter > 0) {
+        currentBookStats.typedPos = 0;
+        currentBookStats.chapter--;
+        changeDivisionText();
+        readyFullText();
+        nextWordSet(true);
+    }
 }
 
-export function nextButton() {
-    if (!currentBookStats.startedBook && currentBookStats.chapter != currentBookData.textPath.length - 1) {
+export function prevPage() {
+    prevWordSet();
+}
+
+export function nextPage() {
+    nextWordSet();
+}
+
+export function nextChapter() {
+    if (currentBookStats.chapter < currentBookData.textPath.length - 1) {
+        currentBookStats.typedPos = 0;
         currentBookStats.chapter++;
         changeDivisionText();
         readyFullText();
         nextWordSet(true);
-    } else nextWordSet();
+    }
 }
 
 function prevWordSet() {
     typed = [];
     currentPage--;
+    // Previous chapter if at the beginning of the chapter
     if (currentBookStats.typedPos == 0) {
         if (currentBookStats.chapter > 0) {
             currentBookStats.chapter--;
@@ -361,6 +373,7 @@ function prevWordSet() {
         currentBookStats.typedPos = fullText.length;
     }
 
+    // Page already loaded
     if (Object.keys(pageLengths).includes(currentPage.toString())) {
         if (currentBookStats.chapter != pageLengths[currentPage].chapter) {
             currentBookStats.chapter = pageLengths[currentPage].chapter;
@@ -371,6 +384,7 @@ function prevWordSet() {
         currentBookStats.typedPos = pageLengths[currentPage].startPos;
         text = fullText.slice(pageLengths[currentPage].startPos);
         text.splice(pageLengths[currentPage].endPos - pageLengths[currentPage].startPos);
+    // Load new page
     } else {
         let startPos = currentBookStats.typedPos;
         currentBookStats.typedPos -= settings.wordCount;
@@ -379,6 +393,7 @@ function prevWordSet() {
         text.splice(startPos - currentBookStats.typedPos);
     }
 
+    // Replace accents in lazy mode
     if (settings.lazyMode) {
         let new_text = [];
         for (let word of text) {
@@ -389,10 +404,10 @@ function prevWordSet() {
 
     stopTimer();
     saveTyping(false);
+
+    // Add words to screen
     hideWords();
-
     $("#words").empty();
-
     for (let word of text) {
         $("#words").append(`<div class="word"></div>`);
         let children = $("#words").children();
@@ -416,9 +431,10 @@ function prevWordSet() {
 
     $("#words").append("<div id='caret'></div>");
 
-    // Once the list of words has loaded, remove the words that aren't on the screen 
+    // Load page
     $("#caret").ready(function () {
-        while ($("#words .word:last").position().top > $(window).height() - 120) {
+        // Remove the words that aren't on the screen 
+        while ($("#words .word:last").position().top > $(window).height() - 160) {
             $("#words .word").first().remove();
             text.shift();
             if ($("#words").children().first().prop("nodeName") == "BR") {
@@ -427,12 +443,11 @@ function prevWordSet() {
             currentBookStats.typedPos++;
         }
 
+        // Save current page
         if (!Object.keys(pageLengths).includes(currentPage.toString())) {
             setPageLengths();
         }
 
-
-        // windowResize();
         updateCaret(true);
         showWords();
     });
@@ -473,9 +488,11 @@ export function nextWordSet(keepCurrent = false) {
         typed = [];
     } else pageLengths = {};
 
+    // Chapter finished
     if (currentBookStats.typedPos >= fullText.length - 1) {
+
+        // Finish Book
         if (currentBookStats.chapter == currentBookData.textPath.length - 1) {
-            // makes sure dialog is ready
             $("#book-finished").ready(() => {
                 currentBookStats.finishedBook = true;
                 saveTyping();
@@ -485,6 +502,8 @@ export function nextWordSet(keepCurrent = false) {
                 
             })
             return;
+        
+        // Next Chapter
         } else {
             currentBookStats.chapter++;
             showChapterLabel();
@@ -493,6 +512,7 @@ export function nextWordSet(keepCurrent = false) {
         }
     }
 
+    // Page already loaded
     if (Object.keys(pageLengths).includes(currentPage.toString())) {
         if (currentBookStats.chapter != pageLengths[currentPage].chapter) {
             currentBookStats.chapter = pageLengths[currentPage].chapter;
@@ -504,11 +524,13 @@ export function nextWordSet(keepCurrent = false) {
         text = fullText.slice(pageLengths[currentPage].startPos);
         text.splice(pageLengths[currentPage].endPos - pageLengths[currentPage].startPos);
 
+    // Load page
     } else {
         text = fullText.slice(currentBookStats.typedPos)
         text.splice(settings.wordCount);
     }
 
+    // Replace accents in lazy mode
     if (settings.lazyMode) {
         let new_text = [];
         for (let word of text) {
@@ -522,6 +544,7 @@ export function nextWordSet(keepCurrent = false) {
         saveTyping(false);
     }
 
+    // Add words to screen
     hideWords();
     $("#words").empty();
     for (let word of text) {
@@ -559,7 +582,6 @@ export function nextWordSet(keepCurrent = false) {
             if (letterCount == -1) {
                 styleWord(wordIndex, 0);
             }
-
         }
     }
 
@@ -569,11 +591,11 @@ export function nextWordSet(keepCurrent = false) {
     $("#caret").ready(function () {
         removeWordsOffScreen();
 
+        // Save current page
         if (!Object.keys(pageLengths).includes(currentPage.toString())) {
             setPageLengths();
         }
 
-        // windowResize();
         updateCaret(true);
         showWords();
     });
@@ -581,7 +603,7 @@ export function nextWordSet(keepCurrent = false) {
 
 function removeWordsOffScreen() {
     for (let child of $("#words").find("div").toArray().reverse()) {
-        if ($(child).position().top > $(window).height() - 120 && $(child).attr('id') != "caret") {
+        if ($(child).position().top > $(window).height() - 160 && $(child).attr('id') != "caret") {
             child.remove();
             text.pop();
             if ($("#words").children().eq(-2).prop("nodeName") == "BR") {
@@ -754,6 +776,7 @@ function styleWord(wordIndex = getTypedAsWords().length - 1, letterIndex) {
 function typeKey(e) {
     if (text.length > 0 && !$("#typing").hasClass("hidden")) {
         if (canType(e.key) && !e.ctrlKey) {
+            setLastPressed();
             let typedAsWords = getTypedAsWords();
             let correctWord = text[typedAsWords.length - 1]
             let typedWord = typedAsWords[typedAsWords.length - 1];
