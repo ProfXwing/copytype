@@ -24,6 +24,9 @@ class Settings {
         this.removePunctuation = false;
         this.removeCaps = false;
         this.removeNewLine = false;
+        this.pageNavigation = true;
+        this.chapterNavigation = true;
+        this.pausePlayButton = true;
 
         this.wordCount = 150; // todo: how many words are loaded, would be great if this was automatic 
         this.currentTheme = 'serika_dark';
@@ -34,6 +37,8 @@ class Settings {
 
         this.bookSort = 'recent' // recent, alphabetical
         this.recentBooks = []; 
+
+        // this.typingHistory = [];
     }
 }
 exports.Settings = Settings;

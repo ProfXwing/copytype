@@ -34,6 +34,9 @@ var fullText;
 var text = [];
 var typed = [];
 
+// [ [ms, letter], ... ]
+// var typingHistory = [];
+
 var currentPage = 0;
 var pageLengths = {
     /* pageNum: {
@@ -226,6 +229,10 @@ export function stopTyping() {
     $("#wpm-counter").addClass("hidden");
     $("#acc-counter").addClass("hidden");
     $("#page-selectors").addClass('hidden');
+    $("#chap-prev").addClass('hidden');
+    $("#chap-next").addClass('hidden');
+    $("#page-prev").addClass('hidden');
+    $("#page-next").addClass('hidden');
     $("#pause-menu").addClass('hidden');
     $("#chapter-label").addClass("hide-chapter-label")
     $("#words").empty();
@@ -250,16 +257,15 @@ export function initTyping(book) {
  
         currentBookStats = window.electron.getBookStats(book);
 
-        $("#page-selectors").removeClass('hidden');
-        if (true) {//settings.showPauseMenu
-            $("#pause-menu").removeClass('hidden');
-        }
+
 
         currentBookData = window.electron.getBookData(book);
 
         settings.currentBook = book;
         window.electron.saveSettings(settings);
     
+        $("#page-selectors").removeClass('hidden');
+
         if (!currentBookStats.startedBook && settings.showPageLabel != 'off') {
             $("#chapter-label").removeClass("hide-chapter-label");
         }
@@ -296,10 +302,14 @@ export function continueTyping() {
 export async function saveTyping(stopping=true) {
     if (currentBookStats) {
         if (stopping) {stopTimer();}
-        // Bookmark
         let savedBookStats = structuredClone(currentBookStats);
+        
+        // Bookmark
         savedBookStats.typedPos = currentBookStats.typedPos + getTypedAsWords().length - 1;
+
         savedBookStats.wpm.correctChars = currentBookStats.wpm.correctChars + getCorrectChars();
+
+        // settings.typingHistory = settings.typingHistory.concat()
         await window.electron.saveBookStats(savedBookStats);
     }
 }
@@ -456,30 +466,31 @@ function prevWordSet() {
 
 export function nextWordSet(keepCurrent = false) {
     if (currentBookStats.finishedBook) {return;}
-    if (settings.flipTestColors) {
-        $("#words").addClass("flipped");
-    } else {
-        $("#words").removeClass("flipped");
-    }
-    if (settings.colorfulMode) {
-        $("#words").addClass("colorfulMode");
-    } else {
-        $("#words").removeClass("colorfulMode");
-    }
-    if (settings.showLiveWpm) {
-        $("#wpm-counter").removeClass("hidden");
-    } else {
-        $("#wpm-counter").addClass("hidden");
-    }
-    if (settings.showLiveAcc) {
-        $("#acc-counter").removeClass("hidden");
-    } else {
-        $("#acc-counter").addClass("hidden");
-    }
+
+    $("#words").toggleClass("flipped", settings.flipTestColors);
+    $("#words").toggleClass("colorfulMode", settings.colorfulMode);
+    $("#wpm-counter").toggleClass("hidden", !settings.showLiveWpm);
+    $("#acc-counter").toggleClass("hidden", !settings.showLiveAcc);
+    $("#page-prev").toggleClass("hidden", !settings.pageNavigation);
+    $("#page-next").toggleClass("hidden", !settings.pageNavigation);
+    $("#chap-prev").toggleClass("hidden", !settings.chapterNavigation);
+    $("#chap-next").toggleClass("hidden", !settings.chapterNavigation);
+    $("#pause-menu").toggleClass("hidden", !settings.pausePlayButton);
+    $(":root").css("--font-size", settings.fontSize + "rem");
     if (settings.showPageLabel == "always on") {
         $("#chapter-label").removeClass("hide-chapter-label");
     }
-    $(":root").css("--font-size", settings.fontSize + "rem");
+
+    if (settings.pageNavigation && !settings.chapterNavigation) {
+        $("#page-prev").css("margin-right", "30px")
+    } else {
+        $("#page-prev").css("margin-right", "10px")
+    }
+    if (settings.chapterNavigation && !settings.pageNavigation) {
+        $("#chap-prev").css("margin-right", "0")
+    } else {
+        $("#chap-prev").css("margin-right", "30px")
+    }
 
     if (!keepCurrent) {
         currentPage++;
@@ -777,6 +788,9 @@ function typeKey(e) {
     if (text.length > 0 && !$("#typing").hasClass("hidden")) {
         if (canType(e.key) && !e.ctrlKey) {
             setLastPressed();
+            // let ms = setLastPressed();
+            // typingHistory.push([ms, e.key]);
+
             let typedAsWords = getTypedAsWords();
             let correctWord = text[typedAsWords.length - 1]
             let typedWord = typedAsWords[typedAsWords.length - 1];
