@@ -27,7 +27,7 @@ for (let setting in settings) {
         }
 
         if ($(this).attr('redoLibrary') == 'true') {
-            for (let child of $("#library").children()) {
+            for (let child of $("#library").find(".library-books").children()) {
                 if (child.id != 'new-book') {
                     $(child).remove();
                 }

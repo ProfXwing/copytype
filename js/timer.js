@@ -1,7 +1,9 @@
 import {
     currentBookStats,
     getCorrectChars,
-    settings
+    saveTyping,
+    settings,
+    stopTimerEvent
 } from "./typing.js";
 
 var startTime;
@@ -71,13 +73,25 @@ export function startTimer() {
     }
 }
 
-export function setLastPressed() {
+export function resetLastPressed() {
+    let timeSinceTyped = 0;
+    if (timeLastPressed) {
+        timeSinceTyped = Date.now() - timeLastPressed;
+    }
     timeLastPressed = Date.now();
+    return timeSinceTyped;
 }
+
+export function decrementLastPressed(decrementBy) {
+    timeLastPressed -= decrementBy;
+}
+
 
 export function pauseTimer() {
     if (timerStarted) {
+        clearTimeout(stopTimerEvent);
         stopTimer(Date.now() - timeLastPressed);
+        saveTyping(false);
     } else {
         startTimer();
     }

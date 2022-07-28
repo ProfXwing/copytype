@@ -28,7 +28,7 @@ class Settings {
         this.chapterNavigation = true;
         this.pausePlayButton = true;
 
-        this.wordCount = 150; // todo: how many words are loaded, would be great if this was automatic 
+        this.wordCount = 250; // todo: how many words are loaded, would be great if this was automatic 
         this.currentTheme = 'serika_dark';
         this.themeType = 'preset'; //preset, custom
         this.savedCustomThemes = [];
@@ -37,8 +37,6 @@ class Settings {
 
         this.bookSort = 'recent' // recent, alphabetical
         this.recentBooks = []; 
-
-        // this.typingHistory = [];
     }
 }
 exports.Settings = Settings;

@@ -65,6 +65,9 @@ contextBridge.exposeInMainWorld('electron', {
             callback();
         })
     },
+    saveTypingHistory: library.saveTypingHistory,
+    getTypingHistory: library.getTypingHistory,
+    clearTypingHistory: library.clearTypingHistory,
     operatingSystem: process.platform
 })
 
@@ -84,6 +87,10 @@ if (!fs.existsSync("settings.json")) {
         delete settings.currentBook;
     }
     library.saveSettings(settings);
+}
+
+if (!fs.existsSync("typing-history.json")) {
+    library.saveTypingHistory([]);
 }
 
 window.addEventListener('DOMContentLoaded', () => {

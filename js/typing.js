@@ -3,12 +3,13 @@
 import {
     showDialog, tryRestartBook
 } from "./dialogs.js";
+import { findSlowestWords, saveTypingHistory } from "./text-gen.js";
 import {
     startTimer,
     stopTimer,
     updateStats,
     timerStarted,
-    setLastPressed
+    resetLastPressed,
 } from "./timer.js";
 
 document.addEventListener('keypress', typeKey);
@@ -34,8 +35,9 @@ var fullText;
 var text = [];
 var typed = [];
 
-// [ [ms, letter], ... ]
-// var typingHistory = [];
+// [ [ms, letter, correctKey], ... ]
+var typingHistory = [];
+export var savedTypingHistory = window.electron.getTypingHistory();
 
 var currentPage = 0;
 var pageLengths = {
@@ -52,9 +54,9 @@ var caretPosX;
 var caretPosY;
 
 
-var stopTimerEvent = setTimeout(() => {
-    saveTyping(false);
+export var stopTimerEvent = setTimeout(() => {
     stopTimer(5000);
+    saveTyping(false);
 }, 5000);
 
 setInterval(() => {
@@ -256,9 +258,6 @@ export function initTyping(book) {
         saveTyping();
  
         currentBookStats = window.electron.getBookStats(book);
-
-
-
         currentBookData = window.electron.getBookData(book);
 
         settings.currentBook = book;
@@ -309,7 +308,9 @@ export async function saveTyping(stopping=true) {
 
         savedBookStats.wpm.correctChars = currentBookStats.wpm.correctChars + getCorrectChars();
 
-        // settings.typingHistory = settings.typingHistory.concat()
+        savedTypingHistory = savedTypingHistory.concat(typingHistory);
+        typingHistory = saveTypingHistory(savedTypingHistory);
+
         await window.electron.saveBookStats(savedBookStats);
     }
 }
@@ -640,6 +641,8 @@ function canType(key) {
         currentBookStats.accuracy.typedChars++;
         currentBookStats.accuracy.correctChars++;
         currentBookStats.wpm.correctChars++;
+        let ms = resetLastPressed();
+        typingHistory.push([ms, key, true]);
         nextWordSet();
         updateCaret();
         return false;
@@ -690,7 +693,18 @@ function checkCorrect() {
     // this counts space as correct because they are both undefined in this case. probably bad to rely on that.
     if (typedLetter == correctLetter) {
         currentBookStats.accuracy.correctChars++;
+
+        // typedLetter was space
+        if (typedWord == "") {
+            // length was incorrect, spaced incorrectly
+            if (typedWords[typedWords.length - 2].length != text[typedWords.length - 2].length) {
+                return false
+            }
+        }
+
+        return true;
     }
+    return false;
 }
 
 function styleWord(wordIndex = getTypedAsWords().length - 1, letterIndex) {
@@ -787,10 +801,6 @@ function styleWord(wordIndex = getTypedAsWords().length - 1, letterIndex) {
 function typeKey(e) {
     if (text.length > 0 && !$("#typing").hasClass("hidden")) {
         if (canType(e.key) && !e.ctrlKey) {
-            setLastPressed();
-            // let ms = setLastPressed();
-            // typingHistory.push([ms, e.key]);
-
             let typedAsWords = getTypedAsWords();
             let correctWord = text[typedAsWords.length - 1]
             let typedWord = typedAsWords[typedAsWords.length - 1];
@@ -812,7 +822,7 @@ function typeKey(e) {
                     typed.push(e.key);
                 }
             }
-            checkCorrect();
+            let keyIsCorrect = checkCorrect();
 
             let currentTypedWords = getTypedAsWords();
 
@@ -861,11 +871,14 @@ function typeKey(e) {
                 startTimer();
             }
 
+            let ms = resetLastPressed();
+            typingHistory.push([ms, e.key, keyIsCorrect]);
+
             // probably shouldn't do this, but i'm gonna do it anyway 😈
             clearTimeout(stopTimerEvent);
             stopTimerEvent = setTimeout(() => {
-                saveTyping(false);
                 stopTimer(5000);
+                saveTyping(false);
             }, 5000);
 
 
@@ -953,6 +966,42 @@ function checkKey(e) {
         // ---------------------------------------------------------------------------------------
 
         typed.pop();
+
+        // For typing history
+        if (!timerStarted) {
+            startTimer();
+        }
+
+        let ms = resetLastPressed();
+        if (typingHistory.length > 0) {
+            let delKey = 0;
+            let historyDeleting;
+
+            // get the keypress that is being backspaced
+            for (let i = typingHistory.length - 1; i >= 0; i--) {
+                if (typingHistory[i][1] == "Backspace") {
+                    delKey++;
+                } else {
+                    if (delKey == 0) {
+                        historyDeleting = typingHistory[i];
+                        break;
+                    }
+                    delKey--;
+                }
+            }    
+
+            if (historyDeleting) {
+                let correctBackspace = !historyDeleting[2];
+                typingHistory.push([ms, e.key, correctBackspace]);
+            }
+        }
+
+        // probably shouldn't do this, but i'm gonna do it anyway 😈
+        clearTimeout(stopTimerEvent);
+        stopTimerEvent = setTimeout(() => {
+            stopTimer(5000);
+            saveTyping(false);
+        }, 5000);
 
         if (settings.highlightMode == "word") {
             styleWord();

@@ -551,6 +551,19 @@ function getDataFromJSON(dir) {
     return JSON.parse(fs.readFileSync(dir));
 }
 
+function saveTypingHistory(typingHistory) {
+    let json = JSON.stringify(typingHistory);
+    fs.writeFileSync("./typing-history.json", json);
+}
+
+function getTypingHistory() {
+    return JSON.parse(fs.readFileSync("./typing-history.json"));
+}
+
+function clearTypingHistory() {
+    saveTypingHistory([]);
+}
+
 function getBookStats(bookName) {
     return JSON.parse(fs.readFileSync(`./library/${bookName}/typing-stats.json`));
 }
@@ -635,7 +648,7 @@ function addLibraryBook(bookDir) {
 
     if (cover) {
 
-        let libraryElem = document.getElementById("library");
+        let libraryElem = document.getElementById("library").getElementsByClassName('library-books')[0];
         let newBook = document.createElement("div");
         newBook.classList.add("book-choice");
         newBook.setAttribute("id", bookDir.name);
@@ -769,3 +782,6 @@ exports.deleteBook = deleteBook;
 exports.removeLibraryBook = removeLibraryBook;
 exports.defaultSettings = defaultSettings;
 exports.restartBook = restartBook;
+exports.getTypingHistory = getTypingHistory;
+exports.saveTypingHistory = saveTypingHistory;
+exports.clearTypingHistory = clearTypingHistory

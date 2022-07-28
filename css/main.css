@@ -211,11 +211,34 @@ body {
     text-align: right;
 }
 
-#library {
+#library .library-books {
     width: 100%;
     margin-top: 50px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.library-or-lessons {
+    width: 450px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(204px, 1fr));
+    margin: auto;
+}
+
+.library-or-lessons div {
+    cursor: pointer;
+    margin: auto;
+    width: 180px;
+    text-align: center;
+    background: rgba(0,0,0,0.1);
+    border-radius: 25px;
+    padding: 2px 12px;
+    opacity: 0.6;
+}
+
+.library-or-lessons .active {
+    opacity: 1;
+    color: var(--text-color);
 }
 
 ::-webkit-scrollbar {
