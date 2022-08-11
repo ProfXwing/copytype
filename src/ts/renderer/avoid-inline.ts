@@ -1,115 +1,115 @@
 // This file is to comply with Content Security Policy, which I don't quite understand.
 // Inline functions are easier but electron gives me a warning so whatever.
 import {
-    deleteBook,
-    hideDialog,
-    confirmDelete,
-    showDialog,
-    tryHideDialog,
-    confirmRestart
+  deleteBook,
+  hideDialog,
+  confirmDelete,
+  showDialog,
+  tryHideDialog,
+  confirmRestart
 } from './dialogs.js';
 import { loadStats } from './stats.js';
 import { pauseTimer } from './timer.js';
 import {
-    initTyping,
-    switchContent,
-    continueTyping,
-    saveTyping,
-    prevPage,
-    prevChapter,
-    nextPage,
-    nextChapter,
-    currentBookStats,
-    stopTyping,
+  initTyping,
+  switchContent,
+  continueTyping,
+  saveTyping,
+  prevPage,
+  prevChapter,
+  nextPage,
+  nextChapter,
+  currentBookStats,
+  stopTyping,
 } from './typing.js';
 
 $("#app-header").click(continueTyping);
 $("#keyboard-header").parents('.text-button').first().click(continueTyping);
 $("#library-header").parents('.text-button').first().click(() => {
-    switchContent('#library')
+  switchContent('#library')
 });
 $("#info-header").parents('.text-button').first().click(() => {
-    switchContent('#info')
+  switchContent('#info')
 })
 $("#settings-header").parents('.text-button').first().click(() => {
-    switchContent('#settings')
+  switchContent('#settings')
 });
 
 $(".cancel-dialog").click(() => {
-    hideDialog()
+  hideDialog()
 });
 
 $("#new-book").click(() => {
-    window.electron.createBook()
+  window.electron.createBook()
 });
 $('#no-book-warning').find("#go-library").click(() => {
-    switchContent("#library")
+  switchContent("#library")
 });
 $('#book-finished').find("#go-library").click(() => {
-    saveTyping();
-    switchContent("#library");
-    stopTyping();
-    hideDialog();
+  saveTyping();
+  switchContent("#library");
+  stopTyping();
+  hideDialog();
 });
 
 $("#book-finished").find("#book-info").click(() => {
-    saveTyping();
-    loadStats(currentBookStats.bookName);
-    stopTyping();
-    hideDialog();
+  saveTyping();
+  loadStats(currentBookStats.bookName);
+  stopTyping();
+  hideDialog();
 });
 
 $("#chap-prev").click(function () {
-    prevChapter();
-    $(this).blur();
+  prevChapter();
+  $(this).blur();
 });
 
 $("#page-prev").click(function () {
-    prevPage();
-    $(this).blur();
+  prevPage();
+  $(this).blur();
 });
 
 $("#page-next").click(function () {
-    nextPage();
-    $(this).blur();
+  nextPage();
+  $(this).blur();
 });
 
 $("#chap-next").click(function () {
-    nextChapter();
-    $(this).blur();
+  nextChapter();
+  $(this).blur();
 });
 
 $("#cancel-delete").click(hideDialog);
 $("#confirm-delete").click(confirmDelete)
 
 $("#book-exists").find("#choose-book").click(() => {
-    hideDialog();
-    window.electron.createBook()
+  hideDialog();
+  window.electron.createBook()
 });
 
 $("#drm-error").find("#choose-book").click(() => {
-    hideDialog();
-    window.electron.createBook()
+  hideDialog();
+  window.electron.createBook()
 });
 
 
 $("#dim-content").click(() => {
-    tryHideDialog()
+  tryHideDialog()
 });
 $("#restart-book-dialog").find("#restart-book").click(() => {
-    confirmRestart();
+  confirmRestart();
 });
 
 $("#play-pause-button").click(function () {
-    pauseTimer();
+  pauseTimer();
 });
 
 window.electron.handleInitTyping(initTyping);
 window.electron.handleSaveTyping(saveTyping);
 window.electron.handleDeleteBook(deleteBook);
 window.electron.handleBookExists(() => {
-    showDialog("book-exists")
+  showDialog("book-exists")
 });
 window.electron.handleDRM(() => {
-    showDialog("drm-error")
+  showDialog("drm-error")
 });

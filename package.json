@@ -1,44 +1,28 @@
 {
   "name": "copytype",
-  "version": "1.0.3",
+  "productName": "copytype",
+  "version": "1.0.4",
   "description": "A typing app for copytyping text documents and ebooks.",
-  "main": "main.js",
+  "main": "dist/ts/main/main.js",
   "scripts": {
-    "test": "test",
-    "start": "electron-forge start",
+    "watch-ts-main": "tsc --project src/ts/main/tsconfig.json -w",
+    "watch-ts-renderer": "tsc --project src/ts/renderer/tsconfig.json -w",
+    "watch-sass": "sass src/styles:dist/styles -w",
+    "start-electron": "electron-forge start",
+    "start": "npm run build; concurrently -k npm:watch-ts-main npm:watch-ts-renderer npm:watch-sass npm:start-electron",
+    "build": "tsc --project src/ts/main/tsconfig.json && tsc --project src/ts/renderer/tsconfig.json && sass src/styles:dist/styles",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint --ext .ts ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ProfXwing/copytype.git"
-  },
+  "keywords": [],
   "author": "ProfXwing",
   "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ProfXwing/copytype/issues"
-  },
-  "homepage": "https://github.com/ProfXwing/copytype#readme",
-  "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.57",
-    "@electron-forge/maker-deb": "^6.0.0-beta.57",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
-    "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "electron": "^18.2.3"
-  },
-  "dependencies": {
-    "electron-disable-file-drop": "^1.0.2",
-    "electron-squirrel-startup": "^1.0.0",
-    "jsdom": "^20.0.0",
-    "node-html-parser": "^3.3.4",
-    "node-stream-zip": "^1.13.4"
-  },
   "config": {
     "forge": {
       "packagerConfig": {},
-      "makers": [
-        {
+      "makers": [{
           "name": "@electron-forge/maker-squirrel",
           "config": {
             "name": "copytype"
@@ -60,5 +44,30 @@
         }
       ]
     }
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.65",
+    "@electron-forge/maker-deb": "^6.0.0-beta.65",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.65",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.65",
+    "@electron-forge/maker-zip": "^6.0.0-beta.65",
+    "@types/esm": "^3.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "concurrently": "^7.3.0",
+    "electron": "^18.2.3",
+    "eslint": "^8.20.0",
+    "eslint-plugin-import": "^2.26.0",
+    "typescript": "~4.5.4",
+    "@types/jquery": "^3.5.14",
+    "@types/jsdom": "^20.0.0"
+  },
+  "dependencies": {
+    "electron-disable-file-drop": "^1.0.2",
+    "electron-squirrel-startup": "^1.0.0",
+    "jsdom": "^20.0.0",
+    "node-html-parser": "^5.3.3",
+    "node-stream-zip": "^1.15.0",
+    "electron-reload": "^2.0.0-alpha.1"
   }
 }
