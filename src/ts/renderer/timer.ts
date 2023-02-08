@@ -1,10 +1,12 @@
 import {
-  currentBookStats,
-  getCorrectChars,
-  saveTyping,
-  settings,
   stopTimerEvent
-} from "./typing.js";
+} from "./typing/test.js";
+import {
+  currentBookStats,
+  saveTyping,
+} from "./typing/load-save.js"
+import { settings } from "./settings.js";
+import { getCorrectChars } from "./stats.js"
 
 var startTime: number;
 export var timerStarted = false;
@@ -111,3 +113,4 @@ export function playPauseToggle() {
     }, 200);
   }
 }
+

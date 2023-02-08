@@ -6,14 +6,18 @@
   <title>copytype</title>
   <link rel="stylesheet" href="../dist/styles/main.css">
   <link id="current-theme" rel="stylesheet">
-  <link href="fontawesome/css/all.css" rel="stylesheet" />
+  <link href="../static/fontawesome/css/all.css" rel="stylesheet" />
   <script src="../dist/ts/renderer/jquery.js"></script>
-  <script type="module" src="../dist/ts/renderer/typing.js"></script>
+
+  <!-- todo: one script that sets up other scripts -->
+  <script type="module" src="../dist/ts/renderer/typing/display.js"></script>
+  <script type="module" src="../dist/ts/renderer/typing/test.js"></script>
   <script type="module" src="../dist/ts/renderer/avoid-inline.js"></script>
   <script type="module" src="../dist/ts/renderer/stats.js"></script>
   <script type="module" src="../dist/ts/renderer/themes.js"></script>
   <script type="module" src="../dist/ts/renderer/settings.js"></script>
   <script type="module" src="../dist/ts/renderer/caps.js"></script>
+  <script type="module" src="../dist/ts/renderer/layouts.js"></script>
 </head>
 
 <body>
@@ -123,6 +127,10 @@
             <label>Upload Book</label>
           </div>
         </div>
+      </div>
+
+      <div class="lessons hidden">
+        <div class="start-lesson">Start</div>
       </div>
     </div>
 
@@ -239,14 +247,13 @@
           </div>
         </div>
 
-        <div class="section strictSpace">
-          <h1>strict space</h1>
-          <div class="text">Pressing space at the beginning of a word will insert a space character when this
-            mode
-            is enabled.</div>
+        <div class="section handleSpaces">
+          <h1>spacing</h1>
+          <div class="text">Handles spaces at the beginning of a word. When set to strict, a space character will be inserted. When set to skip, the word will be skipped.</div>
           <div class="buttons">
-            <div class="button" strictSpace="false" tabindex="0">off</div>
-            <div class="button" strictSpace="true" tabindex="0">on</div>
+            <div class="button" handleSpaces="off" tabindex="0">off</div>
+            <div class="button" handleSpaces="strict" tabindex="0">strict</div>
+            <div class="button" handleSpaces="skip" tabindex="0">skip</div>
           </div>
         </div>
 
@@ -303,6 +310,23 @@
           <div class="buttons">
             <div class="button" lazyMode="false" tabindex="0">off</div>
             <div class="button" lazyMode="true" tabindex="0">on</div>
+          </div>
+        </div>
+
+        <div class="section layoutEmulator">
+          <h1>layout emulator</h1>
+          <div class="text">With this setting you can emulate other layouts. This setting is best kept off.</div>
+          <div class="buttons">
+            <div class="button selection" settingClickable="false">
+              <span class="selected-layout"></span>
+              <i class="fas fa-chevron-down"></i>
+              <div class="dropdown">
+                <input>
+                <div class="layouts">
+
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="sectionSpacer"></div>
@@ -690,12 +714,6 @@
           </div>
         </div>
       </div>
-
-
-
-
-
-
 
       <!-- 
                 //blind mode

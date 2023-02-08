@@ -1,10 +1,12 @@
 // It would be fantastic if I could setup tsconfig in a way that didn't require two model folders.
 export class Settings {
   blindMode = false;
-  strictSpace = false;
+  handleSpaces = "off";
   smoothCaret = true;
   stopOnError = 'off';
   confidenceMode = 'off';
+  layoutEmulator = 'off';
+
   indicateTypos = 'off';
   hideExtraLetters = false;
   lazyMode = false;

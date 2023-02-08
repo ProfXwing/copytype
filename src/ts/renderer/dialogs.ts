@@ -2,7 +2,7 @@ import {
   currentBookStats,
   initTyping,
   stopTyping,
-} from "./typing.js";
+} from "./typing/load-save.js";
 
 var bookToDelete: string;
 var bookToRestart: string;

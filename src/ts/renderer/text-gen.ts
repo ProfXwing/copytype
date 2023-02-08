@@ -1,5 +1,34 @@
-import { savedTypingHistory } from "./typing.js";
-import { KeyPress, TypingHistory } from "./model/typingHistoryModel.js";
+import { initTyping, savedTypingHistory } from "./typing/load-save.js";
+import { TypingHistory } from "./model/typingHistoryModel.js";
+import { removePunctuation } from "./misc.js";
+
+$("#library").find(".library-button").on('click', function () {
+  $("#library").find(".library-books").removeClass("hidden");
+  $("#library").find(".lessons").addClass("hidden");
+
+  $("#library").find(".lessons-button").removeClass("active");
+  $(this).addClass("active");
+});
+
+$("#library").find(".lessons-button").on('click', function () {
+  $("#library").find(".library-books").addClass("hidden");
+  $("#library").find(".lessons").removeClass("hidden");
+
+  $("#library").find(".library-button").removeClass("active");
+  $(this).addClass("active");
+});
+
+$("#library").find(".start-lesson").on('click', function () {
+  let lessonWords = findSlowestWords().map(wordMs => wordMs[0]);
+  lessonWords = removePunctuation(lessonWords.join(" "), ["'"]).split(" ");
+  lessonWords = lessonWords.map(word => word.toLowerCase());
+
+  // remove duplicates from lesson words
+  lessonWords = [...new Set(lessonWords)].splice(0, 100);
+
+  initTyping(undefined, lessonWords);
+});
+
 
 export function sortKeysByTime() {
   // object of keys and their times
@@ -41,7 +70,7 @@ export function findSlowestWords() {
       wordIsCorrect = false;
     }
 
-    if (key == " " || key == "Enter") {
+    if (key == " " || key == "\n") {
       if (wordIsCorrect == false) {
         wordsTyped.pop();
         wordIsCorrect = true;
@@ -78,7 +107,8 @@ export function findSlowestWords() {
     avgWords[word] = sum / times.length;
   }
 
-  const sortedWords = Object.entries(avgWords).sort(([, a], [, b]) => a - b);
+  const sortedWords = Object.entries(avgWords).sort(([, a], [, b]) => b - a);
+  console.log(structuredClone(sortedWords));
   return sortedWords;
 }
 
@@ -102,7 +132,7 @@ export function keyPressesWithoutBackspaces() {
   return keyPresses;
 }
 
-export function saveTypingHistory(savedTypingHistory: TypingHistory) {
+export function saveTypingHistory(savedTypingHistory: TypingHistory, bookName: string) {
   // save last 200k keypresses
   while (savedTypingHistory.length > 200000) {
     let foundSpace = false;
@@ -115,14 +145,13 @@ export function saveTypingHistory(savedTypingHistory: TypingHistory) {
   }
 
   const unsaved = [];
-  if (savedTypingHistory.length > 0) {
-    let lastKeyPress = savedTypingHistory[savedTypingHistory.length - 1][1];
-    while (lastKeyPress != " " && lastKeyPress != "Enter") {
-      unsaved.unshift(savedTypingHistory.pop());
-      lastKeyPress = savedTypingHistory[savedTypingHistory.length - 1][1];
-    }
+  const getLastKeyPress = () => savedTypingHistory[savedTypingHistory.length - 1][1];
+
+  // only save completed words
+  while (savedTypingHistory.length > 0 && getLastKeyPress() != " " && getLastKeyPress() != "Enter") {
+    unsaved.unshift(savedTypingHistory.pop());
   }
 
-  window.electron.saveTypingHistory(savedTypingHistory);
+  window.electron.saveTypingHistory(savedTypingHistory, bookName);
   return unsaved;
 } 

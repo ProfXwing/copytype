@@ -1,21 +1,35 @@
 import { showDialog, hideDialog, deleteThemeDialog, themeToDelete, updateThemeDialog, themeToUpdate } from "./dialogs.js";
 import {
   currentBookStats,
-  settings,
-  saveAndReload,
-  loadLibrary
-} from "./typing.js";
+  saveAndReload
+} from "./typing/load-save.js";
 import { loadCustomTheme, loadTheme } from './themes.js';
 import { normalizeText } from "./misc.js";
 import { addNotification } from "./notifications.js";
+import { setLibraryLoaded } from "./window.js";
 
 var fontSizeInput = $(".fontSize").find("input");
 var removeFromTextInput = $(".removeFromText").find("input");
+export var settings = window.electron.getSettings();
+
+export function newSettings() {
+  settings = window.electron.getSettings();
+  return settings;
+}
+
+export function getSettings() {
+  if (!settings) {
+    settings = window.electron.getSettings();
+  }
+  return settings;
+}
 
 loadSettings();
 
 for (const setting in settings) {
   $(`.pageSettings .section.${setting} .button`).click(function () {
+    if ($(this).attr('settingClickable') == 'false') return;
+
     if (typeof settings[setting] == "boolean") {
       settings[setting] = $(this).attr(setting) == "true";
     } else {
@@ -32,7 +46,7 @@ for (const setting in settings) {
           $(child).remove();
         }
       }
-      loadLibrary();
+      setLibraryLoaded(false);
     }
 
     $(`.pageSettings .section.${setting} .button`).removeClass("active");

@@ -1,9 +1,9 @@
 // thanks bro
 
 /* eslint-disable no-empty */
-import { settings } from "./typing.js";
+import { settings } from "./settings.js";
 
-let capsState = false;
+export var capsState = false;
 
 function show() {
   if ($("#capsWarning").hasClass("hidden")) {

@@ -1,10 +1,11 @@
 import {
-  switchContent,
-  saveTyping,
-  settings
-} from "./typing.js";
+  getWordsTyped, text, typed
+} from "./typing/test.js";
+import { saveTyping } from "./typing/load-save.js";
 import { BookStats } from "./model/bookStatsModel.js";
 import { MetaDataModel } from "./model/metaDataModel.js";
+import { switchContent } from "./window.js";
+import { settings } from "./settings.js";
 
 var bookStats: BookStats;
 var bookData: MetaDataModel;
@@ -77,6 +78,22 @@ function loadWpmAcc() {
   $("#stats").find('#wpm').text(wpm);
   $("#stats").find('#accuracy').text(`${Math.floor(accuracyCorrectChars / accuracyTypedChars * 100) || 100}%`)
   $("#stats").find('#raw-wpm').text(rawWpm);
+}
+
+// Gets the amount of correct characters typed so far
+export function getCorrectChars() {
+  let correctChars = 0;
+  for (const word in getWordsTyped()) {
+    const typedWord = getWordsTyped()[word];
+    if (typedWord == text[word] || settings.blindMode) {
+      correctChars += typedWord.length;
+    }
+
+    // if there's a space after the word (word isn't last word)
+    if (parseInt(word + 1) <= typed.length - 1)
+      correctChars++;
+  }
+  return correctChars;
 }
 
 window.electron.handleLoadInfo(loadStats)

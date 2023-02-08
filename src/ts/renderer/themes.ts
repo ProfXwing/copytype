@@ -1,6 +1,4 @@
-import {
-  settings
-} from "./typing.js";
+import { settings } from "./settings.js";
 
 let themesList: Theme[] = [];
 let sortedThemesList: Theme[] = [];
@@ -111,7 +109,7 @@ export async function getSortedThemesList() {
 
 export async function getThemesList() {
   if (themesList.length == 0) {
-    return $.getJSON("themes/_list.json", function (data) {
+    return $.getJSON("../static/themes/_list.json", function (data) {
       const list = data.sort(function (a: Theme, b: Theme) {
         const nameA = a.name.toLowerCase();
         const nameB = b.name.toLowerCase();
@@ -136,7 +134,7 @@ export function loadTheme(theme: string) {
   link.rel = "stylesheet";
   link.id = "current-theme";
 
-  link.href = `themes/${theme}.css`;
+  link.href = `../static/themes/${theme}.css`;
 
   const headScript = document.querySelector("#current-theme");
   if (headScript) {

@@ -92,10 +92,15 @@ if (!fs.existsSync("settings.json")) {
   }
   library.saveSettings(settings);
 }
-
-if (!fs.existsSync("typing-history.json")) {
-  library.saveTypingHistory([]);
+// ensure each library book has typing history
+for (const book of fs.readdirSync("./library")) {
+  if (fs.lstatSync(`library/${book}`).isDirectory()) {
+    if (!fs.existsSync(`library/${book}/typing-history.json`)) {
+      library.saveTypingHistory([], book);
+    }
+  }
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   const links = document.querySelectorAll("a[href]");

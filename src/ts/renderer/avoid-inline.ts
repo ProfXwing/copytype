@@ -12,16 +12,18 @@ import { loadStats } from './stats.js';
 import { pauseTimer } from './timer.js';
 import {
   initTyping,
-  switchContent,
   continueTyping,
   saveTyping,
+  currentBookStats,
+  stopTyping,
+} from './typing/load-save.js';
+import { switchContent } from './window.js';
+import {
   prevPage,
   prevChapter,
   nextPage,
-  nextChapter,
-  currentBookStats,
-  stopTyping,
-} from './typing.js';
+  nextChapter
+} from './typing/display.js';
 
 $("#app-header").click(continueTyping);
 $("#keyboard-header").parents('.text-button').first().click(continueTyping);

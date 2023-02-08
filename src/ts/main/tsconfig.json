@@ -5,7 +5,6 @@
     "target": "esnext",
     "module": "commonjs",
     "lib": ["ES2021", "DOM"],
-    "noImplicitAny": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "../../../dist/ts/main",

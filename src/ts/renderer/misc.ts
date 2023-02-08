@@ -22,3 +22,23 @@ export function normalizeText(text: string) {
 
   return text;
 }
+
+
+export function removePunctuation(text: string, allowedPunctuation?: string[]) {
+  const punctuation = [`!`, `?`, `.`, `,`, `:`, `;`, `'`, `"`, "`"];
+  for (const punc of punctuation) {
+    if (allowedPunctuation?.includes(punc)) {
+      continue;
+    }
+    text = text.replaceAll(punc, "");
+  }
+
+  const textArray = text.split(" ");
+  for (let i = 0; i < textArray.length; i++) {
+    const word = textArray[i];
+    if (word.indexOf("-") == 0 || word.indexOf("-") == word.length - 1) {
+      textArray[i] = word.replaceAll("-", "");
+    }
+  }
+  return textArray.join(" ");
+}

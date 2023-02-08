@@ -165,7 +165,7 @@ export async function createBook(event: IpcMainEvent) {
 
       const chapText = readyText(chapTextString);
 
-      if (chapText != [""]) {
+      if (!(chapText.length == 1 && chapText[0] == "")) {
 
         const chapTextPath = chaptersDir + `${chapCount}.json`;
         const chapTextJson = JSON.stringify(chapText);
@@ -337,7 +337,7 @@ export async function createBook(event: IpcMainEvent) {
       // next page on page break
       if (elem.rawTagName == 'mbp:pagebreak' || elem == lastChild) {
         const chapTextArray = readyText(chapText);
-        if (chapTextArray != [""] && chapTextArray != [" "]) {
+        if (!arraysEqual(chapTextArray, [""]) && !arraysEqual(chapTextArray, [" "])) {
           const chapTextPath = chaptersDir + `${chapCount}.json`;
           const chapTextJson = JSON.stringify(chapTextArray);
 
@@ -546,9 +546,9 @@ export function getDataFromJSON(dir: string) {
   return JSON.parse(fs.readFileSync(dir).toString());
 }
 
-export function saveTypingHistory(typingHistory: [number, string][]) {
+export function saveTypingHistory(typingHistory: [number, string][], bookName: string) {
   const json = JSON.stringify(typingHistory);
-  fs.writeFileSync("./typing-history.json", json);
+  fs.writeFileSync(`./library/${bookName}/typing-history.json`, json);
 }
 
 export function getTypingHistory() {
@@ -556,7 +556,9 @@ export function getTypingHistory() {
 }
 
 export function clearTypingHistory() {
-  saveTypingHistory([]);
+  for (const book of fs.readdirSync("./library")) {
+    saveTypingHistory([], book);
+  }
 }
 
 export function getBookStats(bookName: string) {
@@ -762,6 +764,18 @@ export function removeLibraryBook(bookName: string) {
   if (bookDiv) {
     bookDiv.parentNode.removeChild(bookDiv);
   }
+}
+
+function arraysEqual(arr1: any[], arr2: any[]) {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  for (let i = arr1.length; i--;) {
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 exports.clearTypingHistory = clearTypingHistory
