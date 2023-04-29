@@ -178,6 +178,16 @@ export async function createBook(event: IpcMainEvent) {
       }
     }
 
+    // ensure there is text in the book
+    console.log(epubText.length);
+    if (epubText.length == 0) {
+      fs.rmdirSync(epubLibDir, { recursive: true });
+      // event.sender.send("remove-from-library", path.parse(epubDir).name);
+      event.sender.send("empty-book");
+      event.sender.send("stop-loading");
+      return;
+    }
+
     metaData = {
       "title": opfDoc.getElementsByTagName("dc:title")[0].textContent,
       "author": opfDoc.getElementsByTagName("dc:creator")[0].textContent,

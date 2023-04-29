@@ -2,7 +2,7 @@ import { showDialog } from "../dialogs.js";
 import { settings } from "../settings.js";
 import { getCorrectChars } from "../stats.js";
 import { stopTimer } from "../timer.js";
-import { getWordsTyped, setText, setTyped, text, typed } from "./test.js";
+import { getWordsTyped, setText, setTyped, text, typed, WrongSpace } from "./test.js";
 import { currentBookData, currentBookStats, fullText, loadTextForTest, replaceAccents, saveTyping } from "./load-save.js"
 export var currentPage = 0;
 
@@ -263,6 +263,10 @@ function prevWordSet() {
   });
 }
 
+export function scrollWords() {
+
+  console.log("scrolling");
+}
 
 export function nextWordSet(keepCurrent = false) {
   if (currentBookStats.finishedBook) { return; }
@@ -381,13 +385,13 @@ export function nextWordSet(keepCurrent = false) {
   }
 
   // Styles words that are already typed
-  if (keepCurrent) {
+  if (keepCurrent && typed.length > 0) {
     const currentTyped = getWordsTyped();
     for (let wordIndex = 0; wordIndex < currentTyped.length; wordIndex++) {
       const letterCount = currentTyped[wordIndex].length - 1;
 
       for (let letterIndex = 0; letterIndex <= letterCount; letterIndex++) {
-        styleWord(wordIndex, letterIndex);
+        styleWord(wordIndex, letterIndex, true);
       }
 
       if (letterCount == -1) {
@@ -401,6 +405,11 @@ export function nextWordSet(keepCurrent = false) {
   // Once the list of 100 words has loaded, remove the words that aren't on the screen 
   $("#caret").ready(function () {
     removeWordsOffScreen();
+
+    const wordsTyped = getWordsTyped();
+    if (wordsTyped.length >= text.length) {
+      nextWordSet();
+    }
 
     // Save current page
     if (!Object.keys(pageLengths).includes(currentPage.toString())) {
@@ -432,7 +441,9 @@ export function setPageLengths() {
   }
 }
 
-export function styleWord(wordIndex = getWordsTyped().length - 1, letterIndex: number = undefined) {
+export function styleWord(wordIndex = getWordsTyped().length - 1, letterIndex: number = undefined, addExtraLetters = false) {
+  if (typed.length == 0) return;
+
   const typedWords = getWordsTyped();
   const typedWord = typedWords[wordIndex].split("");
 
@@ -440,7 +451,7 @@ export function styleWord(wordIndex = getWordsTyped().length - 1, letterIndex: n
     letterIndex = typedWord.length - 1;
   }
 
-  const typedLetter = typedWords[wordIndex][letterIndex];
+  const typedLetter: WrongSpace | string = typedWords[wordIndex][letterIndex];
 
   const shownWord = $("#words").find("div").eq(wordIndex);
   const shownLetter = shownWord.children().eq(letterIndex);
@@ -450,6 +461,8 @@ export function styleWord(wordIndex = getWordsTyped().length - 1, letterIndex: n
   const correctWordPart = correctWord.slice(0, typedWord.length);
 
   const correctLetter = correctWord[letterIndex];
+
+  const newLetter = typedLetter instanceof WrongSpace ? "_" : typedLetter;
 
   if (settings.highlightMode == "letter") {
     if (!settings.blindMode) {
@@ -461,10 +474,21 @@ export function styleWord(wordIndex = getWordsTyped().length - 1, letterIndex: n
           shownLetter.addClass("incorrect");
           if (settings.indicateTypos == "below") {
             const hint = document.createElement("hint");
-            hint.innerHTML = typedLetter;
+            hint.innerHTML = newLetter;
             shownLetter.append(hint);
           } else if (settings.indicateTypos == "replace") {
-            shownLetter.text(typedLetter);
+            shownLetter.text(newLetter);
+          }
+
+          if (letterIndex > correctWord.length - 1 && addExtraLetters) {
+            const letterElem = document.createElement("letter");
+            letterElem.setAttribute('char', newLetter);
+            letterElem.classList.add('incorrect', 'extra')
+            letterElem.innerHTML = newLetter;
+
+            const prevLetter = $("#words").find("div").eq(wordIndex).children().eq(letterIndex - 1);
+
+            $(letterElem).insertAfter(prevLetter);
           }
         }
       }
@@ -504,15 +528,10 @@ export function styleWord(wordIndex = getWordsTyped().length - 1, letterIndex: n
         if (typedLetter != correctLetter) {
           if (settings.indicateTypos == "below") {
             const hint = document.createElement("hint");
-            hint.innerHTML = typedLetter;
+            hint.innerHTML = newLetter;
             shownLetter.append(hint);
           } else if (settings.indicateTypos == "replace") {
-            const newLetter = typedLetter;
-            // if (typedLetter instanceof WrongSpace) {
-            //   newLetter = "_";
-            // }
             shownLetter.text(newLetter);
-            // lastShownLetter.removeClass("nlChar");
           }
         }
       }

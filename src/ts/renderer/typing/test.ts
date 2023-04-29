@@ -7,7 +7,7 @@ import {
   resetLastPressed,
 } from "../timer.js";
 import { getSettings } from "../settings.js";
-import { nextWordSet, removeWordsOffScreen, setPageLengths, styleWord, updateCaret } from "./display.js";
+import { nextWordSet, removeWordsOffScreen, scrollWords, setPageLengths, styleWord, updateCaret } from "./display.js";
 import { currentBookStats, saveTyping, typingHistory } from "./load-save.js";
 import { getCharFromEvent } from "../layouts.js";
 
@@ -16,10 +16,12 @@ document.addEventListener('keydown', keyDown);
 
 var settings = getSettings();
 
-class WrongSpace { }
 
+export class WrongSpace { }
 export var text: string[] = [];
 export var typed: Partial<[string | WrongSpace]> = [];
+
+var pageType = "scroll";
 
 
 // Stops the typing timer after 5 seconds of inactivity
@@ -60,7 +62,10 @@ function canType(key: string) {
     currentBookStats.wpm.correctChars++;
     const ms = resetLastPressed();
     // typingHistory.push([ms, key]);
-    nextWordSet();
+
+    if (pageType == "page") {
+      nextWordSet();
+    }
     updateCaret();
     return false;
   }
@@ -255,6 +260,10 @@ async function keyPress(e: KeyboardEvent) {
     }
     if (eventKey == " ") {
       e.preventDefault();
+    }
+
+    if (e.key == " " || e.key == "Enter" && pageType == "scroll") {
+      scrollWords();
     }
   }
 }

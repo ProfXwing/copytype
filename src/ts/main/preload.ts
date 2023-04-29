@@ -64,6 +64,11 @@ contextBridge.exposeInMainWorld("electron", {
       callback();
     });
   },
+  handleEmptyBook: (callback: () => void) => {
+    ipcRenderer.on("empty-book", () => {
+      callback();
+    });
+  },
   saveTypingHistory: library.saveTypingHistory,
   getTypingHistory: library.getTypingHistory,
   clearTypingHistory: library.clearTypingHistory,

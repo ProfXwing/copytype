@@ -93,7 +93,10 @@ $("#drm-error").find("#choose-book").click(() => {
   hideDialog();
   window.electron.createBook()
 });
-
+$("#empty-book").find("#choose-book").click(() => {
+  hideDialog();
+  window.electron.createBook()
+});
 
 $("#dim-content").click(() => {
   tryHideDialog()
@@ -111,7 +114,10 @@ window.electron.handleSaveTyping(saveTyping);
 window.electron.handleDeleteBook(deleteBook);
 window.electron.handleBookExists(() => {
   showDialog("book-exists")
-});
+})
 window.electron.handleDRM(() => {
   showDialog("drm-error")
+});
+window.electron.handleEmptyBook(() => {
+  showDialog("empty-book");
 });
