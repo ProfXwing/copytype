@@ -22,7 +22,8 @@
   "config": {
     "forge": {
       "packagerConfig": {},
-      "makers": [{
+      "makers": [
+        {
           "name": "@electron-forge/maker-squirrel",
           "config": {
             "name": "copytype"
@@ -52,22 +53,23 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.65",
     "@electron-forge/maker-zip": "^6.0.0-beta.65",
     "@types/esm": "^3.2.0",
+    "@types/jquery": "^3.5.14",
+    "@types/jsdom": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "concurrently": "^7.3.0",
     "electron": "^18.2.3",
     "eslint": "^8.20.0",
     "eslint-plugin-import": "^2.26.0",
-    "typescript": "~4.5.4",
-    "@types/jquery": "^3.5.14",
-    "@types/jsdom": "^20.0.0"
+    "sass": "^1.68.0",
+    "typescript": "~4.5.4"
   },
   "dependencies": {
     "electron-disable-file-drop": "^1.0.2",
+    "electron-reload": "^2.0.0-alpha.1",
     "electron-squirrel-startup": "^1.0.0",
     "jsdom": "^20.0.0",
     "node-html-parser": "^5.3.3",
-    "node-stream-zip": "^1.15.0",
-    "electron-reload": "^2.0.0-alpha.1"
+    "node-stream-zip": "^1.15.0"
   }
 }
