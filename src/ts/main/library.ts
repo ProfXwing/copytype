@@ -29,6 +29,8 @@ function removeFancyTypography(textToClean: string) {
   });
 }
 
+
+// todo: this function is too long
 export async function createBook(event: IpcMainEvent) {
   let zip;
   let mobi;

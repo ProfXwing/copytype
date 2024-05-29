@@ -21,7 +21,7 @@ export class WrongSpace { }
 export var text: string[] = [];
 export var typed: Partial<[string | WrongSpace]> = [];
 
-var pageType = "scroll";
+var pageType = "page";
 
 
 // Stops the typing timer after 5 seconds of inactivity
@@ -55,7 +55,7 @@ function getWordShownAtIndex(index: number) {
 // Checks if you can type
 function canType(key: string) {
   const currentTypedWords = getWordsTyped();
-
+  
   if ((key == " " || key == "Enter") && currentTypedWords.length + 1 > text.length) {
     currentBookStats.accuracy.typedChars++;
     currentBookStats.accuracy.correctChars++;
