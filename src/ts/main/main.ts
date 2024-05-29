@@ -27,8 +27,14 @@ const createWindow = (): void => {
     height: 1080,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-    },
-    autoHideMenuBar: true
+
+      // disable sandboxing for now, can't separate into multiple files without it,
+      // need to use webpack or something
+      // 
+      // todo: fix sandboxing
+      contextIsolation: true,
+      sandbox: false
+    }
   });
 
   // and load the index.html of the app.

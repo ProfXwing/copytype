@@ -1,9 +1,11 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+
+import fs from "fs";
+
 import * as library from "./library";
 import { contextBridge, ipcRenderer, shell } from "electron";
 import crypto from "crypto";
-import fs from "fs";
 const nonce = crypto.randomBytes(16).toString("base64");
 import { Settings } from "./model/settingsModel";
 
