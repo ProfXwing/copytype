@@ -1,0 +1,29 @@
+.section {
+  color: var(--sub-color);
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 2rem;
+  margin: 0;
+  margin-bottom: 2rem;
+  
+  .body {
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    font-size: 1.5rem;
+
+    
+  }
+}
+
+.about {
+  .title {
+    margin: 0 0 1rem;
+    font-size: 2.25rem;
+    line-height: 4rem;
+  }
+}
+
+p {
+  margin: 0;
+}

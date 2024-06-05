@@ -1,0 +1,43 @@
+.newBook {
+  .plusWrapper {
+    width: 232px;
+    background-color: rgba(0,0,0,0.1);
+    height: 300px;
+    display: flex;
+    margin: auto;
+    font-size: 100px;
+    transition: 0.3s;
+    cursor: pointer;
+
+
+    * {
+      margin: auto;
+    }
+  }
+}
+
+.newBook:hover {
+  .plusWrapper {
+    color: var(--bg-color);
+    background-color: var(--text-color);
+  }
+}
+
+.bookChoice {
+  width: 300px;
+
+  .titleWrapper {
+    width: 100%;
+    display: flex;
+
+    label {
+      font-size: 25px;
+      text-align: center;
+      width: 100%;
+    }  
+  }
+}
+
+.fileInput {
+  display: none;
+}
