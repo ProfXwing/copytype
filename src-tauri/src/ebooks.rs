@@ -1,6 +1,7 @@
 use std::{io::{self, Read, Seek, Write}, path::PathBuf};
 
 use epub::doc::{DocError, EpubDoc};
+use mobi::{Mobi, MobiError};
 use serde::{Deserialize, Serialize};
 use tauri::api::dialog;
 
@@ -36,6 +37,16 @@ impl MetaData {
             author: doc.mdata("creator"),
             date_written: doc.mdata("date"),
             num_chapters: doc.spine.len(),
+            date_parsed: get_current_date(),
+        }
+    }
+
+    pub fn new_from_mobi(doc: &Mobi) -> MetaData {
+        MetaData {
+            title: doc.title().to_string(),
+            author: doc.author(),
+            date_written: doc.publish_date(),
+            num_chapters: 1,
             date_parsed: get_current_date(),
         }
     }
@@ -131,8 +142,24 @@ pub fn parse_epub(file_path: PathBuf) -> Result<Book, DocError> {
 
 }
 
-pub fn parse_mobi(file_path: PathBuf) -> Result<Book, io::Error> {
-    Err(io::Error::new(io::ErrorKind::Other, "Not implemented"))
+// todo: switch library or contribute to mobi-rs
+pub fn parse_mobi(file_path: PathBuf) -> Result<Book, MobiError> {
+    let doc = Mobi::from_path(file_path)?;
+    println!("doc exists");
+    let metadata = MetaData::new_from_mobi(&doc);
+    println!("{:?}", metadata);
+
+    let html = doc.content_as_string_lossy();
+    // let content = html;
+    let parsed_html = parse_html(&html);
+    let content = format_text(&parsed_html);
+    println!("{:?}", content);
+    println!("content exists");
+
+    Ok(Book {
+        chapters: vec![content],
+        metadata
+    })
 }
 
 // todo: this should check if a book exists and is formatted correctly

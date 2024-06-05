@@ -22,11 +22,20 @@ async fn upload_book(app_handler: tauri::AppHandle) -> Result<(), Error> {
     let file_path = file_path.unwrap();
     let extension = file_path.extension().and_then(OsStr::to_str).unwrap();
 
+    println!("extension: {}", extension);
+
     let book = match extension {
         "txt" => ebooks::parse_txt(file_path).ok(),
         "epub" => ebooks::parse_epub(file_path).ok(),
+        "mobi" => ebooks::parse_mobi(file_path).ok(),
         _ => None
-    }.unwrap();
+    };
+
+    if book.is_none() {
+        return Err(Error::UnknownFileType);
+    }
+
+    let book = book.unwrap();
 
     let library_dir = dirs::get_library_dir(app_handler);
 

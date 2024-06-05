@@ -7,6 +7,8 @@ pub enum Error {
   Io(#[from] std::io::Error),
   #[error("no file selected")]
   NoFileSelected,
+  #[error("unknown file type")]
+  UnknownFileType,
 }
 
 #[derive(Serialize)]
@@ -25,6 +27,7 @@ impl serde::Serialize for Error {
     let code = match self {
       Error::Io(_) => 0,
       Error::NoFileSelected => 1,
+      Error::UnknownFileType => 2,
     };
 
     let error_data = ErrorData { message, code };
