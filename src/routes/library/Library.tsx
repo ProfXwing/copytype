@@ -25,9 +25,7 @@ const BooksList = () => {
       setNeedsReload(false);
 
       (async () => {
-        const newBookList = await backend.getBookList();
-        setBookList(newBookList);
-        console.log(newBookList);
+        setBookList(await backend.getBookList());
       })();
     }
   }, [needsReload, backend]);

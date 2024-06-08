@@ -1,0 +1,11 @@
+.statIndicators {
+  font-size: 27px;
+  display: grid;
+  gap: 40px;
+  grid-auto-flow: column;
+  width: max-content;
+}
+
+.statIndicator {
+  color: var(--main-color);
+}

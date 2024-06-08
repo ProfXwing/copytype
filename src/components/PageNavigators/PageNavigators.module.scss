@@ -1,0 +1,32 @@
+.pageSelectors {
+  float: right;
+  display: grid;
+  grid-auto-flow: column;
+  gap: 30px;
+} 
+
+.pageNavigator {
+  transition: 0.25s;
+  cursor: pointer;
+  border-radius: 10px;
+  width: 70px;
+  height: 35px;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.2);
+  float: left;
+  margin: 0;
+
+  span {
+    margin: auto;
+    margin-top: -6px;
+  }
+}
+
+.pageButtons {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 10px;
+  margin: 0;
+}
