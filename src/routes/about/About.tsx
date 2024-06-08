@@ -1,12 +1,11 @@
 import classNames from "classnames";
-import Layout from "../../components/Layout/Layout";
 
 import styles from "./About.module.scss";
 const { section, title, body } = styles;
 
 const About = () => {
   return (
-    <Layout>
+    <>
       <InfoSection header="about">
         <p>
           Copytype is essentially a direct clone of <a target="_blank" href="https://monkeytype.com">Monkeytype</a>.
@@ -46,7 +45,7 @@ const About = () => {
           or create an issue on Github.
         </p>
       </InfoSection>
-    </Layout>
+    </>
   );
 };
 

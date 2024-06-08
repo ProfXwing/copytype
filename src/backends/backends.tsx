@@ -1,8 +1,10 @@
 import { createContext } from "react";
 import { TauriBackend } from "./tauri";
+import { MetaData } from "../routes/library/book";
 
 export interface Backend {
   uploadBook: () => Promise<void>;
+  getBookList: () => Promise<MetaData[]>;
 }
 
 export interface BackendContextType {

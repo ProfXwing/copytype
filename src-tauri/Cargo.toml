@@ -25,6 +25,7 @@ regex = "1.10.4"
 lazy_static = "1.4.0"
 mobi = "0.8.0"
 
+
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.

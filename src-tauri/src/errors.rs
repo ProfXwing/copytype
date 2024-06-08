@@ -9,6 +9,8 @@ pub enum Error {
   NoFileSelected,
   #[error("unknown file type")]
   UnknownFileType,
+  #[error(transparent)]
+  JsonParseError(#[from] serde_json::Error),
 }
 
 #[derive(Serialize)]
@@ -28,6 +30,7 @@ impl serde::Serialize for Error {
       Error::Io(_) => 0,
       Error::NoFileSelected => 1,
       Error::UnknownFileType => 2,
+      Error::JsonParseError(_) => 3,
     };
 
     let error_data = ErrorData { message, code };

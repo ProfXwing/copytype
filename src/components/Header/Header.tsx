@@ -32,13 +32,9 @@ export interface HeaderButtonProps {
 }
 
 export const HeaderButton: React.FC<HeaderButtonProps> = (props) => {
-  const handleClick = () => {
-    window.location.href = props.href;
-  };
-
   return (
     <Link to={props.href}>
-      <div onClick={handleClick} className={headerButton}>
+      <div className={headerButton}>
         <FontAwesomeIcon icon={props.icon} fixedWidth/>
       </div>
     </Link>

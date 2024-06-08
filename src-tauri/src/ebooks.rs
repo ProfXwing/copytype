@@ -7,20 +7,25 @@ use tauri::api::dialog;
 
 use crate::formatting::{format_text, parse_html};
 
+// This should match the structure of the book JSON file, same in the frontend.
+
 #[derive(Debug, Serialize, Deserialize)]
-// title, author, date_written, chapter_paths, date started typing
-struct MetaData {
+pub struct Metadata {
+    book_name: String,
     title: String,
     author: Option<String>,
     date_written: Option<String>,
     num_chapters: usize,
-    date_parsed: String,
+    date_parsed: u64,
 }
 
-impl MetaData {
-    pub fn new_from_txt(title: &str) -> MetaData {
-        MetaData {
-            title: title.to_string(),
+impl Metadata {
+    pub fn new_from_txt(file_path: &PathBuf) -> Metadata {
+        let book_name = file_path.file_stem().unwrap().to_str().unwrap().to_string(); 
+
+        Metadata {
+            book_name: book_name.clone(),
+            title: book_name,
             author: None,
             date_written: None,
             num_chapters: 1,
@@ -28,11 +33,12 @@ impl MetaData {
         }
     }
 
-    pub fn new_from_epub<R: Read + Seek>(file_path: PathBuf, doc: &EpubDoc<R>) -> MetaData {
-        let file_name = file_path.file_stem().unwrap().to_str().unwrap();
-        let title = doc.mdata("title").unwrap_or(file_name.to_string());
+    pub fn new_from_epub<R: Read + Seek>(doc: &EpubDoc<R>, file_path: &PathBuf) -> Metadata {
+        let book_name = file_path.file_stem().unwrap().to_str().unwrap().to_string();
+        let title = doc.mdata("title").unwrap_or(book_name.clone());
 
-        MetaData {
+        Metadata {
+            book_name,
             title,
             author: doc.mdata("creator"),
             date_written: doc.mdata("date"),
@@ -41,8 +47,11 @@ impl MetaData {
         }
     }
 
-    pub fn new_from_mobi(doc: &Mobi) -> MetaData {
-        MetaData {
+    pub fn new_from_mobi(doc: &Mobi, file_path: &PathBuf) -> Metadata {
+        let book_name = file_path.file_stem().unwrap().to_str().unwrap().to_string();
+
+        Metadata {
+            book_name,
             title: doc.title().to_string(),
             author: doc.author(),
             date_written: doc.publish_date(),
@@ -52,13 +61,10 @@ impl MetaData {
     }
 }
 
-impl MetaData {
-}
-
 #[derive(Debug)]
 pub struct Book {
     chapters: Vec<String>,
-    metadata: MetaData
+    metadata: Metadata
 }
 
 impl Book {
@@ -98,19 +104,14 @@ pub fn pick_ebook_file() -> Option<PathBuf> {
 }
 
 
-fn get_current_date() -> String {
+fn get_current_date() -> u64 {
     let start = std::time::SystemTime::now();
     let since_the_epoch = start.duration_since(std::time::UNIX_EPOCH).unwrap();
-    since_the_epoch.as_secs().to_string()
-}
-
-fn generate_cover_html(title: &str) -> String {
-    format!("<h1>{}</h1>", title)
+    since_the_epoch.as_secs()
 }
 
 pub fn parse_txt(file_path: PathBuf) -> Result<Book, io::Error> {
-    let title = file_path.file_stem().unwrap().to_str().unwrap();
-    let metadata = MetaData::new_from_txt(title);
+    let metadata = Metadata::new_from_txt(&file_path);
 
     let mut file = std::fs::File::open(file_path)?;
     let mut contents = String::new();
@@ -124,7 +125,7 @@ pub fn parse_txt(file_path: PathBuf) -> Result<Book, io::Error> {
 
 pub fn parse_epub(file_path: PathBuf) -> Result<Book, DocError> {
     let mut doc = EpubDoc::new(&file_path)?;
-    let metadata = MetaData::new_from_epub(file_path, &doc);
+    let metadata = Metadata::new_from_epub(&doc, &file_path);
     let mut chapters = Vec::new();
 
     for i in 0..metadata.num_chapters { 
@@ -144,15 +145,13 @@ pub fn parse_epub(file_path: PathBuf) -> Result<Book, DocError> {
 
 // todo: switch library or contribute to mobi-rs
 pub fn parse_mobi(file_path: PathBuf) -> Result<Book, MobiError> {
-    let doc = Mobi::from_path(file_path)?;
-    println!("doc exists");
-    let metadata = MetaData::new_from_mobi(&doc);
-    println!("{:?}", metadata);
+    let doc = Mobi::from_path(&file_path)?;
+    let metadata = Metadata::new_from_mobi(&doc, &file_path);
 
     let html = doc.content_as_string_lossy();
-    // let content = html;
-    let parsed_html = parse_html(&html);
-    let content = format_text(&parsed_html);
+    let content = html;
+    // let parsed_html = parse_html(&html);
+    // let content = format_text(&parsed_html);
     println!("{:?}", content);
     println!("content exists");
 

@@ -38,6 +38,35 @@
   }
 }
 
-.fileInput {
-  display: none;
+.libraryBooks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  .coverImage {
+    width: 100%;
+    height: 300px;
+    text-align: center;
+    overflow: hidden;
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+
+    h1 {
+      color: black;
+      background-color: white;
+      padding: 3rem;
+    }
+  }
+
+  .bookButtons {
+    text-align: center;
+    font-size: 1.75rem;
+
+    * {
+      color: var(--text-color);
+      margin: 0.5rem;
+    }
+  }
 }
