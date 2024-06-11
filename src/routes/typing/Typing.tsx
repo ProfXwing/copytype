@@ -1,30 +1,47 @@
-// import { useLocation } from "react-router-dom";
-import { Caret } from "../../components/Caret/Caret";
-import { PageNavigators } from "../../components/PageNavigators/PageNavigators";
-import { StatIndicators } from "../../components/StatIndicators/StatIndicators";
+import { useEffect, useState } from "react";
+import Caret from "../../components/Caret/Caret";
+import PageNavigators from "../../components/PageNavigators/PageNavigators";
+import { useSettings } from "../../components/SettingsProvider/Settings";
+import StatIndicators from "../../components/StatIndicators/StatIndicators";
 
 import styles from "./Typing.module.scss";
+import { useBackend } from "../../backends/BackendContext";
 const { wordsContainer, wordDiv } = styles;
 
 export const Typing = () => {
-  // const state: {
-  //   bookName: string | null
-  // } = useLocation().state;
+  const { settings } = useSettings();
+  const { backend } = useBackend();
 
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const fetchedBook = await backend.getBook(settings.recentBooks[0]);
+
+      if (fetchedBook.isSome()) {
+        const newText = fetchedBook.unwrap().chapters[0];
+        setText(newText);
+      }
+    })();
+  }, [backend, settings]);
+
+  const displayedWords = text.slice(0, 500);
 
   return (
     <>
       <PageNavigators />
       <StatIndicators />
-      <Words />
+      <Words text={displayedWords} />
       <Caret />
     </>
-  );  
+  );
 };
 
+interface WordsProps {
+  text: string;
+}
 
-const Words = () => {
-  const text = "Hello, world!";
+const Words = ({ text }: WordsProps) => {
   const words = text.split(" ");
 
   return (
@@ -36,7 +53,7 @@ const Words = () => {
   );
 };
 
-const Word = ({ word }: {word: string}) => {
+const Word = ({ word }: { word: string }) => {
   const characters = word.split("");
 
   return (
