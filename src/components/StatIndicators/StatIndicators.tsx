@@ -1,7 +1,7 @@
 import styles from "./StatIndicators.module.scss";
 const { statIndicators, statIndicator } = styles;
 
-export const StatIndicators = () => {
+const StatIndicators = () => {
   return (
     <div className={statIndicators}>
       <StatIndicator text={"100WPM"} />
@@ -9,6 +9,8 @@ export const StatIndicators = () => {
     </div>
   );
 };
+
+export default StatIndicators;
 
 interface StatIndicatorProps {
   text: string;

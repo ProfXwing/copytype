@@ -1,17 +1,17 @@
-import { Option } from "../../components/options";
+import { Optional } from "../../components/options";
 
 // This should match the structure of the book JSON file, same in the backend.
 
 export interface Book {
-  content: string[];
-  metadata: MetaData; 
+  chapters: string[];
+  metadata: Metadata;
 }
 
-export interface MetaData {
+export interface Metadata {
   bookName: string;
   title: string;
-  author: Option<string>;
-  dateWritten: Option<string>;
+  author: Optional<string>;
+  dateWritten: Optional<string>;
   numChapters: number;
   dateParsed: number;
 }

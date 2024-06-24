@@ -15,8 +15,8 @@ const About = () => {
 
       <InfoSection header="credit">
         <p>
-          This project would not be possible without Miodec, the creator of Monkeytype. 
-          Very huge thank you to you for everything that you do for the typing community, 
+          This project would not be possible without Miodec, the creator of Monkeytype.
+          Very huge thank you to you for everything that you do for the typing community,
           and thank you for letting me copy your website.
         </p>
       </InfoSection>
@@ -25,8 +25,8 @@ const About = () => {
         <p>
           chars typed - total characters typed <br />
           sessions - times opened the book <br />
-          wpm - total amount of characters in the correctly typed words (including spaces), 
-                divided by 5 and normalised to 60 seconds. <br />
+          wpm - total amount of characters in the correctly typed words (including spaces),
+          divided by 5 and normalised to 60 seconds. <br />
           raw wpm - calculated just like wpm, but also includes incorrect words. <br />
           acc - percentage of correctly pressed keys.
         </p>
@@ -34,14 +34,14 @@ const About = () => {
 
       <InfoSection header="bug report or feature request">
         <p>
-          If you encounter a bug, or have a feature request, 
+          If you encounter a bug, or have a feature request,
           you can join my&nbsp;
-          
+
           <a href="https://discord.gg/zQAWJjn2QJ" target="_blank">
             discord server
-          </a>, 
-          
-          message me on discord, 
+          </a>,
+
+          message me on discord,
           or create an issue on Github.
         </p>
       </InfoSection>
@@ -55,7 +55,6 @@ export interface InfoSectionProps {
 }
 
 export const InfoSection = ({ header, children }: InfoSectionProps) => {
-  console.log(styles[header]);
   return (
     <div className={classNames(section, styles[header])}>
       <div className={title}>

@@ -7,3 +7,16 @@
   margin: 0 5px;
   color: var(--sub-color);
 }
+
+.typingPage {
+  overflow:hidden;
+
+  // app height - header height - header margin height
+  height: calc(100vh - 74px - 5rem);
+}
+
+.virtuoso {
+  // scrolling down has no whitespace... 
+  // have to figure out how to allow scrolling past the last word, since part of the div is offscreen now.
+  // height: 2vh;
+}

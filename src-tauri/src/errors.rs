@@ -1,3 +1,4 @@
+use scraper::error;
 use serde::Serialize;
 
 // create the error type that represents all errors possible in our program
@@ -11,6 +12,8 @@ pub enum Error {
   UnknownFileType,
   #[error(transparent)]
   JsonParseError(#[from] serde_json::Error),
+  #[error("book not found")]
+  BookNotFound,
 }
 
 #[derive(Serialize)]
@@ -31,6 +34,7 @@ impl serde::Serialize for Error {
       Error::NoFileSelected => 1,
       Error::UnknownFileType => 2,
       Error::JsonParseError(_) => 3,
+      Error::BookNotFound => 4,
     };
 
     let error_data = ErrorData { message, code };

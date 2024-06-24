@@ -1,8 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::ffi::OsStr;
-use ebooks::pick_ebook_file;
+use std::{ffi::OsStr, io::Read};
+use ebooks::{pick_ebook_file, Book};
 use errors::{Error, Error::NoFileSelected};
 
 mod ebooks;
@@ -46,6 +46,11 @@ async fn upload_book(app_handler: tauri::AppHandle) -> Result<(), Error> {
 }
 
 #[tauri::command]
+async fn get_book(app_handler: tauri::AppHandle, book_name: String) -> Result<ebooks::Book, Error> {
+    Book::load(&book_name, &app_handler)
+}
+
+#[tauri::command]
 async fn get_book_list(app_handler: tauri::AppHandle) -> Result<Vec<ebooks::Metadata>, Error> {
     let library_dir = dirs::get_library_dir(&app_handler)?;
 
@@ -77,9 +82,29 @@ async fn get_book_list(app_handler: tauri::AppHandle) -> Result<Vec<ebooks::Meta
     Ok(book_list)
 }
 
+#[tauri::command]
+async fn get_settings(app_handler: tauri::AppHandle) -> Result<serde_json::Value, Error> {
+    let settings_path = dirs::get_settings_path(&app_handler)?;
+
+    let settings_file = std::fs::File::open(settings_path)?;
+    let settings: serde_json::Value = serde_json::from_reader(settings_file)?;
+
+    Ok(settings)
+}
+
+#[tauri::command]
+async fn set_settings(app_handler: tauri::AppHandle, settings: serde_json::Value) -> Result<(), Error> {
+    let settings_path = dirs::get_settings_path(&app_handler)?;
+
+    let settings_file = std::fs::File::create(settings_path)?;
+    serde_json::to_writer(settings_file, &settings)?;
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![upload_book, get_book_list])
+        .invoke_handler(tauri::generate_handler![upload_book, get_book_list, get_settings, set_settings, get_book])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

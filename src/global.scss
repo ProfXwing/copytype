@@ -1,3 +1,7 @@
+html, body {
+  overscroll-behavior: none;
+}
+
 body {
   font-family: "Roboto Mono";
   background-color: var(--bg-color);

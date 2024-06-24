@@ -1,27 +1,34 @@
-use std::{io::{self, Read, Seek, Write}, path::PathBuf};
+use std::{
+    io::{self, Read, Seek, Write},
+    path::PathBuf,
+};
 
 use epub::doc::{DocError, EpubDoc};
 use mobi::{Mobi, MobiError};
 use serde::{Deserialize, Serialize};
-use tauri::api::dialog;
+use tauri::{api::dialog, AppHandle};
 
-use crate::formatting::{format_text, parse_html};
+use crate::{
+    dirs,
+    errors::Error,
+    formatting::{format_text, parse_html},
+};
 
 // This should match the structure of the book JSON file, same in the frontend.
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {
-    book_name: String,
-    title: String,
-    author: Option<String>,
-    date_written: Option<String>,
-    num_chapters: usize,
-    date_parsed: u64,
+    pub book_name: String,
+    pub title: String,
+    pub author: Option<String>,
+    pub date_written: Option<String>,
+    pub num_chapters: usize,
+    pub date_parsed: u64,
 }
 
 impl Metadata {
     pub fn new_from_txt(file_path: &PathBuf) -> Metadata {
-        let book_name = file_path.file_stem().unwrap().to_str().unwrap().to_string(); 
+        let book_name = file_path.file_stem().unwrap().to_str().unwrap().to_string();
 
         Metadata {
             book_name: book_name.clone(),
@@ -61,10 +68,10 @@ impl Metadata {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Book {
-    chapters: Vec<String>,
-    metadata: Metadata
+    pub chapters: Vec<String>,
+    pub metadata: Metadata,
 }
 
 impl Book {
@@ -88,6 +95,38 @@ impl Book {
         serde_json::to_writer(&mut file, &self.metadata)?;
         Ok(())
     }
+
+    pub fn load(book_name: &str, app_handler: &AppHandle) -> Result<Book, Error> {
+        let library_dir = dirs::get_library_dir(app_handler)?;
+        let book_dir = library_dir.join(book_name);
+        let metadata_path = book_dir.join("metadata.json");
+
+        if !metadata_path.exists() {
+            return Err(Error::BookNotFound);
+        }
+
+        let metadata_file = std::fs::File::open(metadata_path)?;
+        let metadata: Metadata = serde_json::from_reader(metadata_file)?;
+
+        let mut chapters = Vec::new();
+
+        for i in 0..metadata.num_chapters {
+            let content = Book::load_chapter(&book_dir, i)?;
+            chapters.push(content);
+        }
+
+        Ok(Book { chapters, metadata })
+    }
+
+    pub fn load_chapter(book_dir: &PathBuf, chapter_num: usize) -> Result<String, io::Error> {
+        let chapter_path = book_dir.join(format!("chapter_{}.txt", chapter_num));
+
+        let mut file = std::fs::File::open(chapter_path)?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+
+        Ok(contents)
+    }
 }
 
 pub fn pick_ebook_file() -> Option<PathBuf> {
@@ -100,9 +139,8 @@ pub fn pick_ebook_file() -> Option<PathBuf> {
             tx.send(path).expect("Failed to send file path");
         });
 
-     rx.recv().unwrap()
+    rx.recv().unwrap()
 }
-
 
 fn get_current_date() -> u64 {
     let start = std::time::SystemTime::now();
@@ -116,6 +154,7 @@ pub fn parse_txt(file_path: PathBuf) -> Result<Book, io::Error> {
     let mut file = std::fs::File::open(file_path)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
+    contents = format_text(&contents);
 
     Ok(Book {
         chapters: vec![contents],
@@ -128,7 +167,7 @@ pub fn parse_epub(file_path: PathBuf) -> Result<Book, DocError> {
     let metadata = Metadata::new_from_epub(&doc, &file_path);
     let mut chapters = Vec::new();
 
-    for i in 0..metadata.num_chapters { 
+    for i in 0..metadata.num_chapters {
         let resource_id = doc.spine[i].to_string();
         let chapter_html = doc.get_resource_str(&resource_id).unwrap();
         let mut chapter_text = parse_html(&chapter_html.0);
@@ -136,11 +175,7 @@ pub fn parse_epub(file_path: PathBuf) -> Result<Book, DocError> {
         chapters.push(chapter_text);
     }
 
-    Ok(Book {
-        chapters,
-        metadata
-    })
-
+    Ok(Book { chapters, metadata })
 }
 
 // todo: switch library or contribute to mobi-rs
@@ -157,7 +192,7 @@ pub fn parse_mobi(file_path: PathBuf) -> Result<Book, MobiError> {
 
     Ok(Book {
         chapters: vec![content],
-        metadata
+        metadata,
     })
 }
 

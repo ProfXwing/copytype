@@ -1,12 +1,12 @@
-export class Option<T> {
-  private constructor(private value: T | null) {}
+export class Optional<T> {
+  private constructor(private value: T | null) { }
 
   static some<T>(value: T) {
-    return new Option(value);
+    return new Optional(value);
   }
 
   static none<T>() {
-    return new Option<T>(null);
+    return new Optional<T>(null);
   }
 
   isSome() {

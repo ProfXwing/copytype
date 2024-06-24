@@ -1,7 +1,7 @@
 import styles from "./PageNavigators.module.scss";
 const { pageSelectors, pageNavigator, pageButtons } = styles;
 
-export const PageNavigators = () => {
+const PageNavigators = () => {
   return (
     <div className={pageSelectors}>
       <PageNavigator text="<<" onClick={() => {
@@ -24,6 +24,8 @@ export const PageNavigators = () => {
     </div>
   );
 };
+
+export default PageNavigators;
 
 interface PageNavigatorProps {
   text: string;

@@ -1,10 +1,15 @@
 import { createContext } from "react";
 import { TauriBackend } from "./tauri";
-import { MetaData } from "../routes/library/book";
+import { Book, Metadata } from "../routes/library/book";
+import { Optional } from "../components/options";
+import { Settings } from "../components/SettingsProvider/Settings";
 
 export interface Backend {
   uploadBook: () => Promise<void>;
-  getBookList: () => Promise<MetaData[]>;
+  getBookList: () => Promise<Metadata[]>;
+  getBook: (bookName: string) => Promise<Optional<Book>>;
+  getSettings: () => Promise<Optional<Settings>>;
+  setSettings: (settings: Settings) => Promise<void>;
 }
 
 export interface BackendContextType {
@@ -14,7 +19,7 @@ export interface BackendContextType {
 
 export const BackendContext = createContext<BackendContextType>({
   backend: new TauriBackend(),
-  setBackend: () => {},
+  setBackend: () => { },
 });
 
 export interface BackendProviderProps {
