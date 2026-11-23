@@ -8,6 +8,7 @@ export interface Backend {
   uploadBook: () => Promise<void>;
   getBookList: () => Promise<Metadata[]>;
   getBook: (bookName: string) => Promise<Optional<Book>>;
+  setTypingStats: (bookName: string, stats: TypingStats) => Promise<void>;
   getSettings: () => Promise<Optional<Settings>>;
   setSettings: (settings: Settings) => Promise<void>;
 }

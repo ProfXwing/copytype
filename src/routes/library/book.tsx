@@ -15,3 +15,11 @@ export interface Metadata {
   numChapters: number;
   dateParsed: number;
 }
+
+export interface TypingStats {
+  bookCharIndex: number;
+  sessions: number;
+  typedChars: number;
+  correctChars: number;
+  timeTyping: number;
+}

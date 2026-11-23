@@ -71,6 +71,10 @@ export class TauriBackend implements Backend {
     return Optional.some<Book>(data);
   };
 
+  setStats = async () => {
+
+  };
+
   getSettings = async () => {
     const data = await invoke<Settings>('get_settings').catch((errorData: ErrorData) => {
       console.error("Error getting settings");

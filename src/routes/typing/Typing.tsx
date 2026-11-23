@@ -25,11 +25,11 @@ export const Typing = () => {
 
   return (
     <div className={typingPage}>
-      <PageNavigators nextPage={nextPage} />
-      <StatIndicators />
-
       {bookText.isSome() && (
         <>
+          <PageNavigators nextPage={nextPage} />
+          <StatIndicators />
+
           <WordsContainer displayedText={displayedText} ref={wordsContainerRef} />
           <Caret wordsContainerRef={wordsContainerRef} displayedText={displayedText} />
         </>

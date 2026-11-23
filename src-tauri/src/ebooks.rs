@@ -130,6 +130,15 @@ impl Book {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TypingStats {
+    book_char_index: usize,
+    sessions: usize,
+    typed_chars: usize,
+    correct_chars: usize,
+    time_typing: usize,
+}
+
 pub fn pick_ebook_file(app_handler: &AppHandle) -> Option<FilePath> {
     // needs a channel because pick_file is non-blocking
     let (tx, rx) = std::sync::mpsc::channel();
